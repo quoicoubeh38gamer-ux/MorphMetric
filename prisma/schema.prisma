@@ -1,0 +1,278 @@
+// MorphMetric — data model.
+//
+// The MVP runtime is intentionally DB-less (stateless analysis + client-side
+// persistence), so these models are the forward-looking schema: they define
+// the shape persistence will take when auth + Postgres are wired up. Keeping
+// them here now means the analysis/report types and the DB stay aligned.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ---------------------------------------------------------------------------
+// Identity
+// ---------------------------------------------------------------------------
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  profile       Profile?
+  growthProfile GrowthProfile?
+  scans         Scan[]
+  checkIns      CheckIn[]
+  xp            XPTransaction[]
+  badges        UserBadge[]
+  subscription  Subscription?
+  sessions      Session[]
+  accounts      Account[]
+}
+
+model Account {
+  id           String  @id @default(cuid())
+  userId       String
+  provider     String
+  providerId   String
+  accessToken  String?
+  refreshToken String?
+  user         User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerId])
+  @@index([userId])
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  userId    String
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+// ---------------------------------------------------------------------------
+// Profile & goals
+// ---------------------------------------------------------------------------
+
+enum Sex {
+  MALE
+  FEMALE
+  UNSPECIFIED
+}
+
+model Profile {
+  id          String   @id @default(cuid())
+  userId      String   @unique
+  ageYears    Int?
+  sex         Sex      @default(UNSPECIFIED)
+  heightCm    Float?
+  parentAvgCm Float?
+  goals       String[] @default([])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// ---------------------------------------------------------------------------
+// Face scan pipeline
+// ---------------------------------------------------------------------------
+
+enum ScanStatus {
+  UPLOADED
+  ANALYZING
+  COMPLETE
+  FAILED
+  DELETED
+}
+
+enum Confidence {
+  HIGH
+  MEDIUM
+  LOW
+}
+
+enum Controllability {
+  CONTROLLABLE // grooming, hairstyle, posture, photo angle, skin routine
+  PARTIAL // influenced over time
+  FIXED // underlying bone structure
+}
+
+model Scan {
+  id           String     @id @default(cuid())
+  userId       String
+  storageKey   String? // reference into private object storage; never a public URL
+  status       ScanStatus @default(UPLOADED)
+  qualityScore Float?
+  deleteAt     DateTime? // enforced minimal retention
+  createdAt    DateTime   @default(now())
+  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  analysis     Analysis?
+
+  @@index([userId])
+}
+
+model Analysis {
+  id                String           @id @default(cuid())
+  scanId            String           @unique
+  provider          String // e.g. "heuristic@1", "mediapipe@1"
+  morphScore        Float // internal 0..20 score, never presented as objective truth
+  confidenceOverall Confidence       @default(MEDIUM)
+  createdAt         DateTime         @default(now())
+  scan              Scan             @relation(fields: [scanId], references: [id], onDelete: Cascade)
+  features          FeatureScore[]
+  recommendations   Recommendation[]
+}
+
+model FeatureScore {
+  id         String     @id @default(cuid())
+  analysisId String
+  key        String // "symmetry", "proportions", "eyes", ...
+  label      String
+  category   String
+  score      Float // 0..20
+  confidence Confidence @default(MEDIUM)
+  analysis   Analysis   @relation(fields: [analysisId], references: [id], onDelete: Cascade)
+
+  @@index([analysisId])
+}
+
+// ---------------------------------------------------------------------------
+// Recommendations & evidence
+// ---------------------------------------------------------------------------
+
+enum EvidenceTier {
+  EVIDENCE_BACKED
+  PLAUSIBLE
+  UNSUPPORTED
+}
+
+model EvidenceSource {
+  id    String           @id @default(cuid())
+  key   String           @unique
+  org   String // WHO, CDC, NHS, ANSES, EFSA, NIH, AAP, ...
+  title String
+  url   String
+  tier  EvidenceTier     @default(EVIDENCE_BACKED)
+  recos Recommendation[]
+}
+
+model Recommendation {
+  id              String          @id @default(cuid())
+  analysisId      String
+  featureKey      String
+  title           String
+  body            String
+  controllability Controllability @default(CONTROLLABLE)
+  tier            EvidenceTier    @default(PLAUSIBLE)
+  sourceId        String?
+  analysis        Analysis        @relation(fields: [analysisId], references: [id], onDelete: Cascade)
+  source          EvidenceSource? @relation(fields: [sourceId], references: [id])
+
+  @@index([analysisId])
+}
+
+// ---------------------------------------------------------------------------
+// Body & growth (kept fully separate from the face score)
+// ---------------------------------------------------------------------------
+
+enum GrowthTrend {
+  STEADY
+  ACCELERATING
+  PLATEAUING
+  UNKNOWN
+}
+
+model GrowthProfile {
+  id               String      @id @default(cuid())
+  userId           String      @unique
+  sleepScore       Float       @default(0)
+  nutritionScore   Float       @default(0)
+  activityScore    Float       @default(0)
+  consistencyScore Float       @default(0)
+  trend            GrowthTrend @default(UNKNOWN)
+  updatedAt        DateTime    @updatedAt
+  user             User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model CheckIn {
+  id              String   @id @default(cuid())
+  userId          String
+  date            DateTime @default(now())
+  sleepHours      Float?
+  hydrationLiters Float?
+  mealsLogged     Int?
+  activityMinutes Int?
+  habits          Json?
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, date])
+}
+
+// ---------------------------------------------------------------------------
+// Gamification
+// ---------------------------------------------------------------------------
+
+model XPTransaction {
+  id        String   @id @default(cuid())
+  userId    String
+  amount    Int
+  reason    String
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model Badge {
+  id          String      @id @default(cuid())
+  key         String      @unique
+  name        String
+  description String
+  users       UserBadge[]
+}
+
+model UserBadge {
+  id       String   @id @default(cuid())
+  userId   String
+  badgeId  String
+  earnedAt DateTime @default(now())
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  badge    Badge    @relation(fields: [badgeId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, badgeId])
+}
+
+// ---------------------------------------------------------------------------
+// Billing (deferred)
+// ---------------------------------------------------------------------------
+
+enum Plan {
+  FREE
+  PRO
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  CANCELED
+  PAST_DUE
+  NONE
+}
+
+model Subscription {
+  id               String             @id @default(cuid())
+  userId           String             @unique
+  plan             Plan               @default(FREE)
+  status           SubscriptionStatus @default(NONE)
+  currentPeriodEnd DateTime?
+  user             User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
