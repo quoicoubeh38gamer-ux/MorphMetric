@@ -8,6 +8,7 @@ import { NAV_LINKS } from "@/lib/constants";
 import { cn } from "@/lib/utils/cn";
 import { Logo } from "./logo";
 import { ThemeToggle } from "./theme-toggle";
+import { AuthButtons } from "./auth-buttons";
 import { ButtonLink } from "../ui/button";
 
 export function Navbar() {
@@ -40,6 +41,7 @@ export function Navbar() {
         </div>
 
         <div className="flex items-center gap-2">
+          <AuthButtons />
           <ThemeToggle />
           <div className="hidden sm:block">
             <ButtonLink href="/scan" size="sm">
@@ -74,7 +76,14 @@ export function Navbar() {
                 {link.label}
               </Link>
             ))}
-            <ButtonLink href="/scan" className="mt-2 w-full">
+            <Link
+              href="/login"
+              onClick={() => setOpen(false)}
+              className="rounded-xl px-4 py-3 text-sm text-muted"
+            >
+              Log in
+            </Link>
+            <ButtonLink href="/scan" className="mt-1 w-full">
               Start your analysis
             </ButtonLink>
           </div>

@@ -17,6 +17,8 @@ import { ConfidenceBadge } from "@/components/ui/confidence-badge";
 import { EvidenceTag } from "@/components/ui/evidence-tag";
 import { ButtonLink, Button } from "@/components/ui/button";
 import { FeatureCard } from "@/components/results/feature-card";
+import { Burst } from "@/components/ui/burst";
+import { ProGate } from "@/components/ui/pro-gate";
 
 const CONTROL_LABEL: Record<Controllability, string> = {
   controllable: "You control this",
@@ -60,13 +62,16 @@ export default function ResultsPage() {
       <div className="relative animate-fade-up overflow-hidden rounded-3xl border border-border bg-grid-fade p-6 sm:p-10">
         <Aurora />
         <div className="relative grid items-center gap-8 sm:grid-cols-[auto_1fr]">
-          <ScoreRing value={report.morphScore} max={20} size={196}>
-            <span className="text-xs uppercase tracking-widest text-muted">Your MorphMetric</span>
-            <span className="mt-1 font-mono text-4xl font-semibold tabular">
-              <CountUp value={report.morphScore} decimals={1} />
-            </span>
-            <span className="text-xs text-muted">/ 20</span>
-          </ScoreRing>
+          <div className="relative mx-auto">
+            <Burst key={report.id} />
+            <ScoreRing value={report.morphScore} max={20} size={196}>
+              <span className="text-xs uppercase tracking-widest text-muted">Your MorphMetric</span>
+              <span className="mt-1 font-mono text-4xl font-semibold tabular">
+                <CountUp value={report.morphScore} decimals={1} />
+              </span>
+              <span className="text-xs text-muted">/ 20</span>
+            </ScoreRing>
+          </div>
 
           <div>
             <div className="flex flex-wrap items-center gap-2">
@@ -99,8 +104,19 @@ export default function ResultsPage() {
           </div>
         </div>
 
+        {report.strengths[0] ? (
+          <div className="relative mt-6 flex items-center gap-3 rounded-2xl border border-accent/30 bg-accent/10 p-4">
+            <Sparkles className="h-5 w-5 shrink-0 text-accent" />
+            <p className="text-sm">
+              <span className="text-muted">Your standout feature is </span>
+              <span className="font-semibold text-foreground">{report.strengths[0].label}</span>
+              <span className="text-muted"> — lead with it.</span>
+            </p>
+          </div>
+        ) : null}
+
         {report.quality.issues.length > 0 ? (
-          <p className="mt-6 flex items-center gap-2 text-xs text-muted">
+          <p className="mt-4 flex items-center gap-2 text-xs text-muted">
             <TriangleAlert className="h-3.5 w-3.5 text-warning" />
             Image note: {report.quality.issues.join(" ")} Results may be less certain.
           </p>
@@ -195,6 +211,31 @@ export default function ResultsPage() {
             </Card>
           ))}
         </div>
+      </section>
+
+      {/* Advanced insights (Pro) */}
+      <section className="mt-12">
+        <div className="mb-4 flex items-center gap-2">
+          <h2 className="font-display text-xl font-semibold">Advanced insights</h2>
+          <Badge tone="primary"><Sparkles className="h-3.5 w-3.5" /> Pro</Badge>
+        </div>
+        <ProGate
+          title="Unlock Advanced Insights"
+          subtitle="Sub-feature breakdown, month-over-month tracking and a weekly report."
+        >
+          <div className="grid gap-4 sm:grid-cols-3">
+            {[
+              { t: "Sub-feature breakdown", d: "Each feature split into the details that drive it." },
+              { t: "Progress over time", d: "See how your scores move as you follow the roadmap." },
+              { t: "Weekly report", d: "A focused recap and the next best action, every week." },
+            ].map((c) => (
+              <div key={c.t} className="card-base p-5">
+                <p className="font-medium">{c.t}</p>
+                <p className="mt-2 text-sm text-muted">{c.d}</p>
+              </div>
+            ))}
+          </div>
+        </ProGate>
       </section>
 
       {/* Feature detail */}

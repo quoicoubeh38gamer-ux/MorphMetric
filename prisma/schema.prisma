@@ -1,9 +1,8 @@
 // MorphMetric — data model.
 //
-// The MVP runtime is intentionally DB-less (stateless analysis + client-side
-// persistence), so these models are the forward-looking schema: they define
-// the shape persistence will take when auth + Postgres are wired up. Keeping
-// them here now means the analysis/report types and the DB stay aligned.
+// Identity models (User/Session/Account/Verification) follow Better Auth's
+// expected schema. Domain models hang off User. Persistence activates when
+// DATABASE_URL is set; the app runs without it (auth is feature-flagged).
 
 generator client {
   provider = "prisma-client-js"
@@ -15,15 +14,20 @@ datasource db {
 }
 
 // ---------------------------------------------------------------------------
-// Identity
+// Identity (Better Auth)
 // ---------------------------------------------------------------------------
 
 model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  name      String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id            String   @id @default(cuid())
+  name          String?
+  email         String   @unique
+  emailVerified Boolean  @default(false)
+  image         String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  sessions Session[]
+  accounts Account[]
 
   profile       Profile?
   growthProfile GrowthProfile?
@@ -32,32 +36,50 @@ model User {
   xp            XPTransaction[]
   badges        UserBadge[]
   subscription  Subscription?
-  sessions      Session[]
-  accounts      Account[]
-}
-
-model Account {
-  id           String  @id @default(cuid())
-  userId       String
-  provider     String
-  providerId   String
-  accessToken  String?
-  refreshToken String?
-  user         User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@unique([provider, providerId])
-  @@index([userId])
 }
 
 model Session {
   id        String   @id @default(cuid())
-  userId    String
-  token     String   @unique
   expiresAt DateTime
+  token     String   @unique
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  ipAddress String?
+  userAgent String?
+  userId    String
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
+}
+
+model Account {
+  id                    String    @id @default(cuid())
+  accountId             String
+  providerId            String
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@index([userId])
+}
+
+model Verification {
+  id         String   @id @default(cuid())
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([identifier])
 }
 
 // ---------------------------------------------------------------------------
@@ -102,18 +124,18 @@ enum Confidence {
 }
 
 enum Controllability {
-  CONTROLLABLE // grooming, hairstyle, posture, photo angle, skin routine
-  PARTIAL // influenced over time
-  FIXED // underlying bone structure
+  CONTROLLABLE
+  PARTIAL
+  FIXED
 }
 
 model Scan {
   id           String     @id @default(cuid())
   userId       String
-  storageKey   String? // reference into private object storage; never a public URL
+  storageKey   String?
   status       ScanStatus @default(UPLOADED)
   qualityScore Float?
-  deleteAt     DateTime? // enforced minimal retention
+  deleteAt     DateTime?
   createdAt    DateTime   @default(now())
   user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
   analysis     Analysis?
@@ -124,8 +146,8 @@ model Scan {
 model Analysis {
   id                String           @id @default(cuid())
   scanId            String           @unique
-  provider          String // e.g. "heuristic@1", "mediapipe@1"
-  morphScore        Float // internal 0..20 score, never presented as objective truth
+  provider          String
+  morphScore        Float
   confidenceOverall Confidence       @default(MEDIUM)
   createdAt         DateTime         @default(now())
   scan              Scan             @relation(fields: [scanId], references: [id], onDelete: Cascade)
@@ -136,10 +158,10 @@ model Analysis {
 model FeatureScore {
   id         String     @id @default(cuid())
   analysisId String
-  key        String // "symmetry", "proportions", "eyes", ...
+  key        String
   label      String
   category   String
-  score      Float // 0..20
+  score      Float
   confidence Confidence @default(MEDIUM)
   analysis   Analysis   @relation(fields: [analysisId], references: [id], onDelete: Cascade)
 
@@ -159,7 +181,7 @@ enum EvidenceTier {
 model EvidenceSource {
   id    String           @id @default(cuid())
   key   String           @unique
-  org   String // WHO, CDC, NHS, ANSES, EFSA, NIH, AAP, ...
+  org   String
   title String
   url   String
   tier  EvidenceTier     @default(EVIDENCE_BACKED)
@@ -182,7 +204,7 @@ model Recommendation {
 }
 
 // ---------------------------------------------------------------------------
-// Body & growth (kept fully separate from the face score)
+// Body & growth
 // ---------------------------------------------------------------------------
 
 enum GrowthTrend {
@@ -253,7 +275,7 @@ model UserBadge {
 }
 
 // ---------------------------------------------------------------------------
-// Billing (deferred)
+// Billing (architecture ready; Stripe deferred)
 // ---------------------------------------------------------------------------
 
 enum Plan {
@@ -269,10 +291,12 @@ enum SubscriptionStatus {
 }
 
 model Subscription {
-  id               String             @id @default(cuid())
-  userId           String             @unique
-  plan             Plan               @default(FREE)
-  status           SubscriptionStatus @default(NONE)
-  currentPeriodEnd DateTime?
-  user             User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id                   String             @id @default(cuid())
+  userId               String             @unique
+  plan                 Plan               @default(FREE)
+  status               SubscriptionStatus @default(NONE)
+  stripeCustomerId     String?
+  stripeSubscriptionId String?
+  currentPeriodEnd     DateTime?
+  user                 User               @relation(fields: [userId], references: [id], onDelete: Cascade)
 }

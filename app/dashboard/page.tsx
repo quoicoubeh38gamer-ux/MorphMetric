@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { motion } from "framer-motion";
 import { Activity, Flame, Moon, Salad, Sparkles, Trophy, Droplets, CheckCircle2, Circle } from "lucide-react";
 import type { FaceReport, GrowthInput } from "@/lib/ai/types";
 import { store, type CheckIn } from "@/lib/store";
@@ -10,7 +11,8 @@ import { computeStreak, levelFromXp } from "@/lib/gamification";
 import { greeting, score1 } from "@/lib/utils/format";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
+import { CountUp } from "@/components/ui/count-up";
+import { Burst } from "@/components/ui/burst";
 import { ButtonLink, Button } from "@/components/ui/button";
 
 const MISSIONS = [
@@ -76,8 +78,19 @@ export default function DashboardPage() {
         </div>
         <div className="flex flex-wrap gap-2">
           <Badge tone="primary"><Trophy className="h-3.5 w-3.5" /> Level {level.level}</Badge>
-          <Badge tone="accent"><Sparkles className="h-3.5 w-3.5" /> {xp.toLocaleString()} XP</Badge>
-          <Badge tone="warning"><Flame className="h-3.5 w-3.5" /> {streak} day{streak === 1 ? "" : "s"}</Badge>
+          <Badge tone="accent">
+            <Sparkles className="h-3.5 w-3.5" /> <CountUp value={xp} decimals={0} duration={0.9} /> XP
+          </Badge>
+          <Badge tone="warning">
+            <motion.span
+              animate={{ scale: [1, 1.18, 1] }}
+              transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
+              className="inline-flex"
+            >
+              <Flame className="h-3.5 w-3.5" />
+            </motion.span>
+            {streak} day{streak === 1 ? "" : "s"}
+          </Badge>
         </div>
       </div>
 
@@ -87,7 +100,14 @@ export default function DashboardPage() {
           <span>Level {level.level}</span>
           <span>{level.toNext} XP to level {level.level + 1}</span>
         </div>
-        <Progress value={level.pct} max={100} />
+        <div className="h-2 w-full overflow-hidden rounded-full bg-border/60">
+          <motion.div
+            className="h-full rounded-full bg-gradient-to-r from-primary to-accent"
+            initial={{ width: 0 }}
+            animate={{ width: `${level.pct}%` }}
+            transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
+          />
+        </div>
       </div>
 
       <div className="mt-8 grid gap-5 lg:grid-cols-3">
@@ -205,11 +225,20 @@ export default function DashboardPage() {
             );
           })}
         </div>
-        <div className="mt-5 flex items-center gap-3">
+        <div className="relative mt-5 flex items-center gap-3">
+          {logged ? <Burst /> : null}
           <Button onClick={logCheckin} disabled={logged}>
             {logged ? "Logged ✓" : "Log check-in"}
           </Button>
-          {logged ? <span className="text-sm text-accent">Nice — streak updated.</span> : null}
+          {logged ? (
+            <motion.span
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="text-sm font-medium text-accent"
+            >
+              +15 XP · streak updated 🔥
+            </motion.span>
+          ) : null}
         </div>
       </Card>
     </div>

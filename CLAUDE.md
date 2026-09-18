@@ -183,8 +183,20 @@ file. Never rewrite a working feature arbitrarily.
   body-shaming — enforced in copy and code (protects against refunds, payment-
   processor bans, store rejection and false-advertising liability).
 
+- **Auth (email + password)**: Better Auth + Prisma (`lib/auth/*`, `app/api/auth/[...all]`,
+  `/login`, `/signup`, navbar account state). Feature-flagged on DATABASE_URL —
+  the app runs fully without a DB; accounts activate when one is connected.
+  Build applies migrations only when DATABASE_URL is set (`scripts/predeploy.mjs`);
+  baseline migration committed under `prisma/migrations/0_init`.
+- **Plan gating** (`lib/subscription.ts`, `ProGate`): Free/Pro architecture wired
+  (advanced-insights section gated on results). Stripe deferred.
+- **Dopamine/design pass**: results reward burst + standout-feature callout;
+  dashboard animated gradient level bar, XP count-up, pulsing streak, check-in
+  burst + floating XP.
+
 ### To do
-- Auth / sign-up (accounts so users can subscribe) + Postgres + private storage.
-- Stripe gating (Free vs Pro); weekly report automation.
+- Connect Postgres (e.g. Vercel Storage) + set AUTH_SECRET/APP_URL → test the
+  live sign-up/login flow (not testable from the build container).
+- Stripe checkout + webhook to flip plan → Pro (architecture already in place).
+- Move scan/report persistence server-side per user once accounts are live.
 - On-device landmark accuracy tuning validated with real photos on the live site.
-- Broader test coverage; more motion/design polish.
