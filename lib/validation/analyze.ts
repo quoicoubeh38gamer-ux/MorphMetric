@@ -3,9 +3,13 @@ import { z } from "zod";
 /**
  * Server-side validation for the analyze request.
  *
- * The client sends a compact image fingerprint + measured quality, never raw
- * pixels in the MVP. Everything is bounded and sanitized here — the frontend is
- * never trusted to be well-formed.
+ * Two vision modes:
+ *  - "landmarks": real MediaPipe geometry ran in the browser; the client sends
+ *    bounded per-feature signals (never raw pixels).
+ *  - "fingerprint": deterministic heuristic fallback when no face is detected.
+ *
+ * The frontend is never trusted to be well-formed — everything is bounded here,
+ * and scoring/recommendations always run on the server.
  */
 export const profileSchema = z.object({
   ageYears: z.number().int().min(5).max(100).nullable(),
@@ -21,10 +25,28 @@ export const qualitySchema = z.object({
   issues: z.array(z.string().max(120)).max(12),
 });
 
+const unit = z.number().min(0).max(1);
+
+export const signalsSchema = z.object({
+  symmetry: unit,
+  proportions: unit,
+  eyes: unit,
+  brows: unit,
+  nose: unit,
+  lips: unit,
+  jaw: unit,
+  skin: unit,
+});
+
+export const visionSchema = z.discriminatedUnion("mode", [
+  z.object({ mode: z.literal("landmarks"), signals: signalsSchema }),
+  z.object({ mode: z.literal("fingerprint"), fingerprint: z.array(unit).min(1).max(64) }),
+]);
+
 export const analyzeRequestSchema = z.object({
   profile: profileSchema,
   quality: qualitySchema,
-  fingerprint: z.array(z.number().min(0).max(1)).min(1).max(64),
+  vision: visionSchema,
 });
 
 export type AnalyzeRequest = z.infer<typeof analyzeRequestSchema>;

@@ -69,7 +69,9 @@ export default function ResultsPage() {
             <div className="flex flex-wrap items-center gap-2">
               <Badge tone="primary"><Sparkles className="h-3.5 w-3.5" /> Analysis complete</Badge>
               <ConfidenceBadge confidence={report.confidenceOverall} />
-              <Badge tone="default">{report.provider}</Badge>
+              <Badge tone="default">
+                {report.provider.startsWith("mediapipe") ? "AI · 468-point scan" : "Basic scan"}
+              </Badge>
             </div>
             <h1 className="mt-4 font-display text-2xl font-semibold tracking-tight sm:text-3xl">
               Your strengths, mapped

@@ -6,6 +6,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { AlertTriangle, Camera, CheckCircle2, Lock, RefreshCw, ScanFace, Upload } from "lucide-react";
 import type { Profile, Sex } from "@/lib/ai/types";
 import { processImage, validateFile, type ProcessedImage } from "@/lib/image/client";
+import { detectFace, type FaceDetectResult } from "@/lib/ai/vision/landmarks";
 import { store } from "@/lib/store";
 import { CAPTURE_GUIDELINES, GOAL_OPTIONS, SEX_OPTIONS } from "@/lib/constants";
 import { cn } from "@/lib/utils/cn";
@@ -41,6 +42,8 @@ export function ScanFlow() {
   // capture
   const [processing, setProcessing] = useState(false);
   const [processed, setProcessed] = useState<ProcessedImage | null>(null);
+  const [detecting, setDetecting] = useState(false);
+  const [face, setFace] = useState<FaceDetectResult | null>(null);
   const [fileError, setFileError] = useState<string | null>(null);
   const [scanMsg, setScanMsg] = useState(0);
   const [error, setError] = useState<string | null>(null);
@@ -68,18 +71,29 @@ export function ScanFlow() {
       return;
     }
     setProcessing(true);
+    setFace(null);
     try {
       const result = await processImage(file);
       setProcessed(result);
+      setProcessing(false);
+      // Only run the real vision model on a good-quality photo.
+      if (result.quality.ok) {
+        setDetecting(true);
+        const detection = await detectFace(file);
+        setFace(detection);
+        setDetecting(false);
+      }
     } catch (e) {
       setFileError(e instanceof Error ? e.message : "Could not process that image.");
-    } finally {
       setProcessing(false);
+      setDetecting(false);
     }
   }
 
   function reset() {
     setProcessed(null);
+    setFace(null);
+    setDetecting(false);
     setFileError(null);
     if (inputRef.current) inputRef.current.value = "";
   }
@@ -104,7 +118,10 @@ export function ScanFlow() {
           body: JSON.stringify({
             profile,
             quality: processed.quality,
-            fingerprint: processed.fingerprint,
+            vision:
+              face?.detected && face.signals
+                ? { mode: "landmarks", signals: face.signals }
+                : { mode: "fingerprint", fingerprint: processed.fingerprint },
           }),
         }),
         new Promise((r) => setTimeout(r, 2600)),
@@ -280,7 +297,7 @@ export function ScanFlow() {
                   <div className="flex flex-col gap-4 sm:flex-row">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
-                      src={processed.previewDataUrl}
+                      src={face?.meshPreviewDataUrl ?? processed.previewDataUrl}
                       alt="Your scan preview"
                       className="h-40 w-40 shrink-0 rounded-2xl border border-border object-cover"
                     />
@@ -292,9 +309,25 @@ export function ScanFlow() {
                         </Badge>
                       </div>
                       {processed.quality.ok ? (
-                        <p className="mt-2 text-sm text-muted">
-                          Looks good. You can run the analysis.
-                        </p>
+                        <div className="mt-2">
+                          {detecting ? (
+                            <span className="inline-flex items-center gap-2 text-sm text-muted">
+                              <RefreshCw className="h-3.5 w-3.5 animate-spin" /> Loading AI model &amp; detecting face…
+                            </span>
+                          ) : face?.detected ? (
+                            <Badge tone="accent">
+                              <ScanFace className="h-3.5 w-3.5" /> Face detected · {face.pointCount} points mapped
+                            </Badge>
+                          ) : face ? (
+                            <p className="text-sm text-warning">
+                              {face.error
+                                ? "The face model couldn't load right now — we'll run a basic analysis."
+                                : "No face detected — we'll run a basic analysis. For best results, use a clear, front-facing photo."}
+                            </p>
+                          ) : (
+                            <p className="text-sm text-muted">Looks good. You can run the analysis.</p>
+                          )}
+                        </div>
                       ) : (
                         <div className="mt-2 rounded-xl border border-warning/30 bg-warning/10 p-3">
                           <p className="flex items-center gap-2 text-sm font-medium text-warning">
@@ -334,7 +367,7 @@ export function ScanFlow() {
                 <button type="button" onClick={() => setStep("profile")} className="text-sm text-muted hover:text-foreground">
                   ← Back
                 </button>
-                <Button onClick={analyze} disabled={!processed || !processed.quality.ok}>
+                <Button onClick={analyze} disabled={!processed || !processed.quality.ok || detecting}>
                   <ScanFace className="h-4 w-4" /> Analyze
                 </Button>
               </div>

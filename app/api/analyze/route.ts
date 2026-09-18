@@ -2,7 +2,9 @@ import { NextResponse } from "next/server";
 import { analyzeRequestSchema } from "@/lib/validation/analyze";
 import { clientKey, rateLimit } from "@/lib/security/rate-limit";
 import { getVisionProvider } from "@/lib/ai/vision";
+import { visionFromLandmarkSignals } from "@/lib/ai/measurements";
 import { buildFaceReport } from "@/lib/ai/report";
+import type { VisionResult } from "@/lib/ai/types";
 
 // Scoring must never run on the client. This route is the trust boundary:
 // validate → rate-limit → run the vision provider → build the report.
@@ -35,7 +37,7 @@ export async function POST(req: Request): Promise<Response> {
     );
   }
 
-  const { profile, quality, fingerprint } = parsed.data;
+  const { profile, quality, vision } = parsed.data;
   if (!quality.ok) {
     return NextResponse.json(
       { error: "Better image needed.", quality },
@@ -43,8 +45,14 @@ export async function POST(req: Request): Promise<Response> {
     );
   }
 
-  const vision = getVisionProvider().analyze({ fingerprint, quality });
-  const report = buildFaceReport(profile, vision, quality);
+  // Real landmarks (MediaPipe, client) vs. heuristic fallback — either way the
+  // server owns the scoring, breakdown, recommendations and XP.
+  const visionResult: VisionResult =
+    vision.mode === "landmarks"
+      ? visionFromLandmarkSignals(vision.signals, quality)
+      : getVisionProvider().analyze({ fingerprint: vision.fingerprint, quality });
+
+  const report = buildFaceReport(profile, visionResult, quality);
 
   return NextResponse.json({ report });
 }

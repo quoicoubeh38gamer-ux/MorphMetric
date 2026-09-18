@@ -158,6 +158,12 @@ file. Never rewrite a working feature arbitrarily.
 - AI layer (`lib/ai`): types, `VisionProvider` interface + deterministic
   heuristic provider, analysis/scoring engine, evidence database, recommendation
   engine, report orchestrator, growth engine.
+- **Real vision model**: MediaPipe FaceLandmarker (468 points) runs in-browser
+  (`lib/ai/vision/landmarks.ts`) — real geometry → per-feature balance signals +
+  skin evenness from pixels + a mesh overlay in the scan UI. Signals POST to
+  `/api/analyze` (mode `landmarks`); the server maps them to scores/recos and
+  sets confidence (`lib/ai/measurements.ts`). Heuristic (`fingerprint`) is the
+  graceful fallback when no face is detected or the model can't load.
 - Security: server-side `analyze` route with zod validation, MIME/size/dimension
   limits, in-memory rate limiting, hardening headers, EXIF-stripping upload,
   Delete-my-data.
@@ -169,10 +175,16 @@ file. Never rewrite a working feature arbitrarily.
 ### Decisions
 - DB-less MVP with client persistence (see §5). Prisma schema kept as the target
   shape.
-- Heuristic vision provider for the MVP, behind a swap-in interface (§4).
+- Vision runs on-device (MediaPipe, zero inference cost, privacy-first);
+  scoring/recommendations stay server-authoritative. Balance signals are
+  proportion heuristics with confidence levels — never a beauty claim.
 - Age-aware framing (<18 de-emphasizes the aesthetic score).
+- Product stance: honest, evidence-tagged, no false/impossible promises, no
+  body-shaming — enforced in copy and code (protects against refunds, payment-
+  processor bans, store rejection and false-advertising liability).
 
 ### To do
-- Wire Postgres + auth + private storage; move persistence server-side.
-- Real vision provider (MediaPipe/cloud) behind `VisionProvider`.
-- Stripe gating; weekly report automation; broader test coverage.
+- Auth / sign-up (accounts so users can subscribe) + Postgres + private storage.
+- Stripe gating (Free vs Pro); weekly report automation.
+- On-device landmark accuracy tuning validated with real photos on the live site.
+- Broader test coverage; more motion/design polish.
