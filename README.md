@@ -2,6 +2,12 @@
 
 **AI-powered personal morphology & growth insights.**
 
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fquoicoubeh38gamer-ux%2FMorphMetric)
+
+> One-click deploy: click the button above (or import the repo at
+> [vercel.com/new](https://vercel.com/new)). No environment variables are
+> required for the MVP — it builds and runs out of the box.
+
 MorphMetric helps you understand your facial features and growth-related habits,
 then turns that into a small, evidence-tagged plan focused on what you can
 actually control. It is a personal-optimization dashboard — **not** a beauty
