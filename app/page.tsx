@@ -19,6 +19,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { ButtonLink } from "@/components/ui/button";
 import { HeroVisual } from "@/components/landing/hero-visual";
+import { Aurora } from "@/components/ui/aurora";
 import { FEATURE_KEYS } from "@/lib/ai/types";
 import { FEATURE_META } from "@/lib/ai/features";
 
@@ -41,8 +42,9 @@ export default function LandingPage() {
   return (
     <>
       {/* Hero */}
-      <Section className="pt-14 sm:pt-20">
-        <div className="grid items-center gap-12 lg:grid-cols-[1.1fr_0.9fr]">
+      <Section className="relative overflow-hidden pt-14 sm:pt-20">
+        <Aurora />
+        <div className="relative grid items-center gap-12 lg:grid-cols-[1.1fr_0.9fr]">
           <div className="animate-fade-up">
             <Badge tone="primary">
               <Sparkles className="h-3.5 w-3.5" /> AI-powered morphology & growth
@@ -302,20 +304,23 @@ export default function LandingPage() {
 
       {/* Final CTA */}
       <Section className="pt-0">
-        <div className="rounded-3xl border border-border bg-grid-fade p-10 text-center sm:p-16">
-          <h2 className="font-display text-3xl font-semibold tracking-tight sm:text-4xl">
-            Your face isn&apos;t a mystery. Your habits aren&apos;t either.
-          </h2>
-          <p className="mx-auto mt-4 max-w-xl text-muted">
-            Scan. Understand. Improve — with data-driven, evidence-tagged guidance.
-          </p>
-          <div className="mt-8 flex justify-center">
-            <ButtonLink href="/scan" size="lg">Start your analysis</ButtonLink>
+        <div className="relative overflow-hidden rounded-3xl border border-border bg-grid-fade p-10 text-center sm:p-16">
+          <Aurora />
+          <div className="relative">
+            <h2 className="font-display text-3xl font-semibold tracking-tight sm:text-4xl">
+              Your face isn&apos;t a mystery. Your habits aren&apos;t either.
+            </h2>
+            <p className="mx-auto mt-4 max-w-xl text-muted">
+              Scan. Understand. Improve — with data-driven, evidence-tagged guidance.
+            </p>
+            <div className="mt-8 flex justify-center">
+              <ButtonLink href="/scan" size="lg">Start your analysis</ButtonLink>
+            </div>
+            <p className="mt-4 text-xs text-muted">
+              By continuing you agree your photo is handled per our{" "}
+              <Link href="/privacy" className="underline underline-offset-2">privacy approach</Link>.
+            </p>
           </div>
-          <p className="mt-4 text-xs text-muted">
-            By continuing you agree your photo is handled per our{" "}
-            <Link href="/privacy" className="underline underline-offset-2">privacy approach</Link>.
-          </p>
         </div>
       </Section>
     </>

@@ -2,14 +2,16 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { motion } from "framer-motion";
 import { Info, ScanFace, ShieldCheck, Sparkles, TriangleAlert } from "lucide-react";
 import type { Controllability, FaceReport } from "@/lib/ai/types";
 import { store } from "@/lib/store";
 import { score1 } from "@/lib/utils/format";
 import { ScoreRing } from "@/components/ui/score-ring";
 import { CountUp } from "@/components/ui/count-up";
-import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
+import { Aurora } from "@/components/ui/aurora";
+import { RadarChart } from "@/components/results/radar-chart";
 import { Card } from "@/components/ui/card";
 import { ConfidenceBadge } from "@/components/ui/confidence-badge";
 import { EvidenceTag } from "@/components/ui/evidence-tag";
@@ -55,8 +57,9 @@ export default function ResultsPage() {
   return (
     <div className="container max-w-5xl py-12 sm:py-16">
       {/* Header / score */}
-      <div className="animate-fade-up rounded-3xl border border-border bg-grid-fade p-6 sm:p-10">
-        <div className="grid items-center gap-8 sm:grid-cols-[auto_1fr]">
+      <div className="relative animate-fade-up overflow-hidden rounded-3xl border border-border bg-grid-fade p-6 sm:p-10">
+        <Aurora />
+        <div className="relative grid items-center gap-8 sm:grid-cols-[auto_1fr]">
           <ScoreRing value={report.morphScore} max={20} size={196}>
             <span className="text-xs uppercase tracking-widest text-muted">Your MorphMetric</span>
             <span className="mt-1 font-mono text-4xl font-semibold tabular">
@@ -107,18 +110,30 @@ export default function ResultsPage() {
       {/* Breakdown */}
       <section className="mt-12">
         <h2 className="font-display text-xl font-semibold">Score breakdown</h2>
-        <div className="mt-5 grid gap-4 sm:grid-cols-2">
-          {report.features.map((f) => (
-            <div key={f.key} className="card-base p-4">
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium">{f.label}</span>
-                <span className="font-mono text-sm tabular">{score1(f.score)}</span>
-              </div>
-              <div className="mt-2.5">
-                <Progress value={f.score} />
-              </div>
+        <div className="mt-5 grid gap-4 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
+          <div className="card-base flex items-center justify-center p-4">
+            <div className="aspect-square w-full max-w-sm">
+              <RadarChart features={report.features.map((f) => ({ key: f.key, label: f.label, score: f.score }))} />
             </div>
-          ))}
+          </div>
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
+            {report.features.map((f, i) => (
+              <div key={f.key} className="card-base p-4">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium">{f.label}</span>
+                  <span className="font-mono text-sm tabular">{score1(f.score)}</span>
+                </div>
+                <div className="mt-2.5 h-2 w-full overflow-hidden rounded-full bg-border/60">
+                  <motion.div
+                    className="h-full rounded-full bg-primary"
+                    initial={{ width: 0 }}
+                    animate={{ width: `${Math.min(100, (f.score / 20) * 100)}%` }}
+                    transition={{ duration: 0.9, delay: 0.1 + i * 0.05, ease: [0.22, 1, 0.36, 1] }}
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
