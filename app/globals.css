@@ -3,57 +3,69 @@
 @tailwind utilities;
 
 /* ---------------------------------------------------------------------------
-   MorphMetric theme tokens.
-   Dark-first: :root defaults to the deep theme; [data-theme="light"] overrides.
+   MorphMetric — "Celestial" design system (angelic theme).
+   Light-first: :root is luminous daylight (ivory, radiant gold, heavenly
+   violet, sky). [data-theme="dark"] is a celestial night sky.
    All values are HSL channels so Tailwind can apply alpha via `/ <alpha-value>`.
 --------------------------------------------------------------------------- */
 :root,
-:root[data-theme="dark"] {
-  --background: 224 32% 6%;
-  --surface: 223 26% 9%;
-  --card: 223 24% 11%;
-  --border: 222 16% 19%;
-  --ring: 255 90% 72%;
-  --foreground: 210 32% 96%;
-  --muted: 216 16% 72%;
-  --muted-2: 218 12% 52%;
-
-  --primary: 255 90% 72%;
-  --primary-foreground: 255 60% 9%;
-  --accent: 162 68% 50%;
-  --accent-foreground: 162 80% 8%;
-
-  --success: 152 62% 48%;
-  --warning: 38 92% 60%;
-  --danger: 352 78% 64%;
-
-  --shadow: 224 60% 2%;
-
-  color-scheme: dark;
-}
-
 :root[data-theme="light"] {
-  --background: 220 34% 98%;
-  --surface: 0 0% 100%;
+  --background: 42 60% 98%;
+  --surface: 40 46% 99%;
   --card: 0 0% 100%;
-  --border: 220 18% 90%;
-  --ring: 255 82% 60%;
-  --foreground: 224 44% 12%;
-  --muted: 220 14% 34%;
-  --muted-2: 220 10% 48%;
+  --border: 40 34% 90%;
+  --ring: 41 94% 56%;
+  --foreground: 250 34% 18%;
+  --muted: 250 14% 40%;
+  --muted-2: 250 10% 54%;
 
-  --primary: 255 80% 60%;
-  --primary-foreground: 0 0% 100%;
-  --accent: 162 66% 36%;
+  --primary: 41 92% 55%;
+  --primary-foreground: 36 60% 12%;
+  --accent: 256 88% 72%;
   --accent-foreground: 0 0% 100%;
 
-  --success: 152 58% 40%;
-  --warning: 34 90% 46%;
-  --danger: 352 70% 52%;
+  /* halo hues used across glows, gradients and auroras */
+  --halo-gold: 43 96% 62%;
+  --halo-violet: 262 92% 78%;
+  --halo-sky: 205 96% 74%;
+  --halo-rose: 340 92% 82%;
 
-  --shadow: 224 40% 40%;
+  --success: 150 56% 42%;
+  --warning: 35 92% 52%;
+  --danger: 350 76% 60%;
+
+  --shadow: 255 46% 52%;
 
   color-scheme: light;
+}
+
+:root[data-theme="dark"] {
+  --background: 254 44% 7%;
+  --surface: 253 36% 10%;
+  --card: 253 32% 12%;
+  --border: 253 24% 22%;
+  --ring: 43 96% 62%;
+  --foreground: 250 42% 96%;
+  --muted: 250 22% 76%;
+  --muted-2: 250 16% 58%;
+
+  --primary: 43 96% 62%;
+  --primary-foreground: 254 60% 8%;
+  --accent: 260 92% 80%;
+  --accent-foreground: 260 60% 10%;
+
+  --halo-gold: 43 98% 66%;
+  --halo-violet: 264 96% 82%;
+  --halo-sky: 205 98% 78%;
+  --halo-rose: 340 96% 84%;
+
+  --success: 150 58% 52%;
+  --warning: 38 94% 62%;
+  --danger: 352 82% 68%;
+
+  --shadow: 256 80% 2%;
+
+  color-scheme: dark;
 }
 
 @layer base {
@@ -66,10 +78,16 @@
   }
   body {
     @apply bg-background text-foreground antialiased;
-    font-feature-settings: "cv02", "cv03", "cv04", "ss01";
+    font-feature-settings: "ss01", "cv11";
+    /* Soft heavenly light washing in from above — present even before JS. */
+    background-image:
+      radial-gradient(60rem 40rem at 50% -10%, hsl(var(--halo-gold) / 0.16), transparent 60%),
+      radial-gradient(46rem 38rem at 12% 8%, hsl(var(--halo-violet) / 0.12), transparent 60%),
+      radial-gradient(46rem 38rem at 88% 4%, hsl(var(--halo-sky) / 0.12), transparent 62%);
+    background-attachment: fixed;
   }
   ::selection {
-    background: hsl(var(--primary) / 0.28);
+    background: hsl(var(--halo-gold) / 0.32);
   }
   /* Respect reduced-motion for every animation the design uses. */
   @media (prefers-reduced-motion: reduce) {
@@ -85,34 +103,98 @@
 }
 
 @layer components {
-  /* Extremely light glassmorphism — a hint of frost, never heavy. */
+  /* Frosted, luminous glass — a breath of cloud, never heavy. */
   .glass {
-    background: hsl(var(--card) / 0.72);
-    backdrop-filter: blur(14px) saturate(1.1);
-    -webkit-backdrop-filter: blur(14px) saturate(1.1);
+    background: hsl(var(--card) / 0.68);
+    backdrop-filter: blur(16px) saturate(1.4);
+    -webkit-backdrop-filter: blur(16px) saturate(1.4);
   }
+
+  /* Cards float like clouds — soft edges, gentle lift + gold halo on hover. */
   .card-base {
-    @apply rounded-2xl border border-border bg-card shadow-soft transition-all duration-300;
+    @apply relative rounded-3xl border border-border bg-card shadow-soft transition-all duration-500;
   }
   .card-base:hover {
-    @apply -translate-y-0.5;
-    border-color: hsl(var(--primary) / 0.28);
-    box-shadow: 0 12px 44px -18px hsl(var(--shadow) / 0.55);
+    @apply -translate-y-1;
+    border-color: hsl(var(--halo-gold) / 0.45);
+    box-shadow:
+      0 22px 60px -24px hsl(var(--shadow) / 0.5),
+      0 0 0 1px hsl(var(--halo-gold) / 0.14),
+      0 0 42px -6px hsl(var(--halo-gold) / 0.28);
   }
+
+  /* Gradient border card — a ring of divine light. */
+  .divine-card {
+    position: relative;
+  }
+  .divine-card::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(
+      135deg,
+      hsl(var(--halo-gold) / 0.7),
+      hsl(var(--halo-violet) / 0.55) 45%,
+      hsl(var(--halo-sky) / 0.5)
+    );
+    -webkit-mask:
+      linear-gradient(#fff 0 0) content-box,
+      linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+  }
+
+  /* Shimmering celestial text (gold → violet → sky). */
   .text-gradient {
     @apply bg-clip-text text-transparent;
     background-image: linear-gradient(
       100deg,
-      hsl(var(--foreground)) 0%,
-      hsl(var(--primary)) 45%,
-      hsl(var(--accent)) 70%,
-      hsl(var(--primary)) 100%
+      hsl(var(--halo-gold)) 0%,
+      hsl(var(--accent)) 42%,
+      hsl(var(--halo-sky)) 66%,
+      hsl(var(--halo-gold)) 100%
     );
     background-size: 220% auto;
-    animation: gradient-pan 7s ease infinite;
+    animation: gradient-pan 6s ease infinite;
   }
+
+  /* Radiant gold text with a soft glow — for hero accents. */
+  .text-halo {
+    color: hsl(var(--foreground));
+    text-shadow:
+      0 0 24px hsl(var(--halo-gold) / 0.35),
+      0 0 60px hsl(var(--halo-gold) / 0.18);
+  }
+
   .focus-ring {
     @apply outline-none ring-offset-2 ring-offset-background focus-visible:ring-2 focus-visible:ring-ring;
+  }
+
+  /* Light-sweep sheen overlay (used on buttons/cards for a passing gleam). */
+  .sheen {
+    position: relative;
+    overflow: hidden;
+    isolation: isolate;
+  }
+  .sheen::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    transform: translateX(-120%);
+    background: linear-gradient(
+      100deg,
+      transparent 20%,
+      hsl(0 0% 100% / 0.5) 50%,
+      transparent 80%
+    );
+    mix-blend-mode: overlay;
+    pointer-events: none;
+  }
+  .sheen:hover::after {
+    animation: sheen 0.9s ease;
   }
 }
 
@@ -126,15 +208,32 @@
   }
 }
 
+@keyframes sheen {
+  to {
+    transform: translateX(120%);
+  }
+}
+
 @layer utilities {
+  /* Faint constellation of dots. */
   .bg-dots {
     background-image: radial-gradient(
-      hsl(var(--foreground) / 0.06) 1px,
+      hsl(var(--halo-gold) / 0.14) 1px,
       transparent 1px
     );
-    background-size: 22px 22px;
+    background-size: 24px 24px;
   }
   .tabular {
     font-variant-numeric: tabular-nums;
+  }
+  /* A pooled halo of light behind an element. */
+  .halo {
+    box-shadow:
+      0 0 0 1px hsl(var(--halo-gold) / 0.18),
+      0 0 34px -4px hsl(var(--halo-gold) / 0.45),
+      0 0 70px -10px hsl(var(--halo-violet) / 0.35);
+  }
+  .drop-halo {
+    filter: drop-shadow(0 0 10px hsl(var(--halo-gold) / 0.55));
   }
 }

@@ -20,6 +20,7 @@ import { Card } from "@/components/ui/card";
 import { ButtonLink } from "@/components/ui/button";
 import { HeroVisual } from "@/components/landing/hero-visual";
 import { Aurora } from "@/components/ui/aurora";
+import { Sparkles as SparkleField } from "@/components/ui/sparkles";
 import { FEATURE_KEYS } from "@/lib/ai/types";
 import { FEATURE_META } from "@/lib/ai/features";
 import { siteUrl } from "@/lib/site-url";
@@ -58,12 +59,13 @@ export default function LandingPage() {
       {/* Hero */}
       <Section className="relative overflow-hidden pt-14 sm:pt-20">
         <Aurora />
+        <SparkleField count={12} />
         <div className="relative grid items-center gap-12 lg:grid-cols-[1.1fr_0.9fr]">
           <div className="animate-fade-up">
-            <Badge tone="primary">
+            <Badge tone="primary" className="animate-halo-breathe">
               <Sparkles className="h-3.5 w-3.5" /> AI-powered morphology & growth
             </Badge>
-            <h1 className="mt-5 font-display text-4xl font-semibold leading-[1.05] tracking-tight sm:text-5xl lg:text-6xl">
+            <h1 className="mt-5 font-display text-5xl font-semibold leading-[1.02] tracking-tight sm:text-6xl lg:text-7xl">
               Understand your morphology.{" "}
               <span className="text-gradient">Build your potential.</span>
             </h1>
@@ -246,8 +248,11 @@ export default function LandingPage() {
                 { icon: Sparkles, k: "Morph Points", v: "1,420" },
                 { icon: Flame, k: "Streak", v: "8d" },
               ].map((s) => (
-                <div key={s.k} className="rounded-2xl border border-border bg-background/60 p-4 text-center">
-                  <s.icon className="mx-auto h-5 w-5 text-primary" />
+                <div
+                  key={s.k}
+                  className="group rounded-2xl border border-border bg-background/60 p-4 text-center transition-all duration-300 hover:-translate-y-1 hover:border-halo-gold/50 hover:shadow-glow"
+                >
+                  <s.icon className="mx-auto h-5 w-5 text-primary transition-transform duration-500 group-hover:scale-125 group-hover:drop-shadow-[0_0_8px_hsl(var(--halo-gold))]" />
                   <div className="mt-2 font-mono text-xl">{s.v}</div>
                   <div className="text-xs text-muted">{s.k}</div>
                 </div>
@@ -318,10 +323,11 @@ export default function LandingPage() {
 
       {/* Final CTA */}
       <Section className="pt-0">
-        <div className="relative overflow-hidden rounded-3xl border border-border bg-grid-fade p-10 text-center sm:p-16">
+        <div className="divine-card relative overflow-hidden rounded-[2rem] border border-border bg-grid-fade p-10 text-center shadow-halo sm:p-16">
           <Aurora />
+          <SparkleField count={18} />
           <div className="relative">
-            <h2 className="font-display text-3xl font-semibold tracking-tight sm:text-4xl">
+            <h2 className="font-display text-4xl font-semibold tracking-tight sm:text-5xl lg:text-6xl">
               Your face isn&apos;t a mystery. Your habits aren&apos;t either.
             </h2>
             <p className="mx-auto mt-4 max-w-xl text-muted">

@@ -1,13 +1,15 @@
 import type { Metadata } from "next";
-import { Inter, Space_Grotesk, JetBrains_Mono } from "next/font/google";
+import { Manrope, Cormorant_Garamond, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { Navbar } from "@/components/site/navbar";
 import { Footer } from "@/components/site/footer";
 import { AnimatedBackground } from "@/components/ui/animated-background";
 import { siteUrl } from "@/lib/site-url";
 
-const sans = Inter({ subsets: ["latin"], variable: "--font-sans", display: "swap" });
-const display = Space_Grotesk({
+// Manrope — clean, luminous body sans. Cormorant Garamond — an ethereal,
+// high-contrast serif for headings (the "angelic" voice of the brand).
+const sans = Manrope({ subsets: ["latin"], variable: "--font-sans", display: "swap" });
+const display = Cormorant_Garamond({
   subsets: ["latin"],
   variable: "--font-display",
   display: "swap",
@@ -53,13 +55,13 @@ export const metadata: Metadata = {
   },
 };
 
-// Set the theme before paint to avoid a flash. Defaults to dark.
+// Set the theme before paint to avoid a flash. Defaults to the luminous
+// light theme (the angelic daylight); honours an explicit stored choice.
 const themeScript = `
 (function(){try{
-  var t = localStorage.getItem('mm:theme');
-  if(!t){ t = matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark'; }
+  var t = localStorage.getItem('mm:theme') || 'light';
   document.documentElement.setAttribute('data-theme', t);
-}catch(e){ document.documentElement.setAttribute('data-theme','dark'); }})();
+}catch(e){ document.documentElement.setAttribute('data-theme','light'); }})();
 `;
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
