@@ -18,7 +18,7 @@ function shortId(): string {
 }
 
 // Realistic ceilings reachable by improving CONTROLLABLE presentation factors
-// (grooming, skin, sleep, framing). Structure is never assumed to change.
+// (styling, skin, sleep, framing). Structure is never assumed to change.
 const CONTROLLABLE_CEILING: Record<FeatureKey, number> = {
   skin: 18,
   brows: 17,
@@ -87,7 +87,7 @@ export function buildFaceReport(
   quality: QualitySummary,
   metricsRaw?: FaceMetricsRaw,
 ): FaceReport {
-  const features = scoreFeatures(vision);
+  const features = scoreFeatures(vision, metricsRaw);
   const morphScore = computeMorphScore(features);
   const confidenceOverall = overallConfidence(features, quality);
 
@@ -110,7 +110,7 @@ export function buildFaceReport(
     morphScore,
     potentialScore,
     potentialNote:
-      "Reachable by improving what you control (grooming, skin, sleep, framing). Bone structure is not included.",
+      "Reachable by improving what you control (styling, skin, sleep, framing). Bone structure is not included.",
     confidenceOverall,
     ageAware: profile.ageYears !== null && profile.ageYears < 18,
     quality,

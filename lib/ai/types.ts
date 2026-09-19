@@ -48,6 +48,17 @@ export interface FeatureImprovement {
   sourceKey?: string;
 }
 
+/** A precise, anatomy-grounded sub-score inside a facial feature. */
+export interface SubMetric {
+  key: string;
+  label: string;
+  value: string; // formatted measured value, or "—"
+  ideal: string; // neutral reference range
+  score: number; // 0..20, precise
+  note: string; // what it measures, in plain anatomical terms
+  measured: boolean; // true = from real 468-point geometry; false = estimated
+}
+
 export interface FeatureScore {
   key: FeatureKey;
   label: string;
@@ -56,6 +67,9 @@ export interface FeatureScore {
   confidence: Confidence;
   summary: string;
   whyItMatters: string;
+  anatomy: string; // the anatomy behind the feature
+  detail: string; // a deeper, honest explanation
+  subMetrics: SubMetric[]; // precise per-dimension breakdown
   improve: FeatureImprovement[]; // what genuinely helps, evidence-tagged
   fixed: string[]; // what a photo/app can't change (structure)
   myths: string[]; // popular but unsupported claims — honestly flagged

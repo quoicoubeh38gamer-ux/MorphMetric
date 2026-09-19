@@ -44,7 +44,7 @@ export function buildGlowUpPlan(report: FaceReport | null, _growth?: GrowthInput
     },
     {
       week: 2,
-      title: "Framing & grooming",
+      title: "Framing & styling",
       focus: "Highest-return, fully-in-your-control changes.",
       tasks: [
         t("w2-brows", "Shape and tidy your eyebrows to frame the eyes.", "plausible"),

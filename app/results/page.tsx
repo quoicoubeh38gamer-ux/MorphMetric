@@ -178,6 +178,38 @@ export default function ResultsPage() {
         </div>
       </section>
 
+      {/* Methodology */}
+      <section className="mt-12">
+        <div className="card-base p-6">
+          <div className="flex items-center gap-2">
+            <ShieldCheck className="h-5 w-5 text-accent" />
+            <h2 className="font-display text-xl font-semibold">How your MorphMetric is calculated</h2>
+          </div>
+          <p className="mt-2 text-sm text-muted">
+            No black box. Here&apos;s exactly what happens to your photo — and what we deliberately
+            don&apos;t claim.
+          </p>
+          <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {[
+              { n: "01", t: "468-point mesh", d: "A vision model maps your face on your device and extracts real geometry — never sent to a server as an image." },
+              { n: "02", t: "Anatomical ratios", d: "Thirds, fWHR, canthal tilt, eye spacing, nasal & mouth width, jaw width and symmetry are measured against neutral reference ranges." },
+              { n: "03", t: "Weighted score", d: "Each region is scored 0–20 and combined by weight into your MorphMetric, with a confidence level on every estimate." },
+              { n: "04", t: "Honest limits", d: "A flat 2D photo can't judge depth (nose projection, jaw bone). Those are flagged as estimated, not scored precisely." },
+            ].map((s) => (
+              <div key={s.n} className="rounded-2xl border border-border bg-background/40 p-4">
+                <span className="font-mono text-xs text-primary">{s.n}</span>
+                <p className="mt-2 font-medium">{s.t}</p>
+                <p className="mt-1.5 text-xs leading-snug text-muted">{s.d}</p>
+              </div>
+            ))}
+          </div>
+          <p className="mt-4 text-xs text-muted">
+            The MorphMetric is an internal, relative metric to improve from — not an objective measure
+            of attractiveness or worth. We never promise to change bone structure.
+          </p>
+        </div>
+      </section>
+
       {/* Detailed measurements */}
       {report.metrics.length > 0 ? (
         <section className="mt-12">
@@ -301,9 +333,9 @@ export default function ResultsPage() {
         >
           <div className="grid gap-4 sm:grid-cols-3">
             {[
-              { t: "Sub-feature breakdown", d: "Each feature split into the details that drive it." },
-              { t: "Progress over time", d: "See how your scores move as you follow the roadmap." },
-              { t: "Weekly report", d: "A focused recap and the next best action, every week." },
+              { t: "Month-over-month tracking", d: "Your scores and ratios charted across every scan." },
+              { t: "Weekly personalized report", d: "A focused recap and the single next best action, every week." },
+              { t: "Full AM/PM routine", d: "A step-by-step skin, styling and habit routine tuned to your lowest scores." },
             ].map((c) => (
               <div key={c.t} className="card-base p-5">
                 <p className="font-medium">{c.t}</p>

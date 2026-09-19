@@ -79,6 +79,27 @@ export const EVIDENCE_SOURCES: Record<string, EvidenceSource> = {
     url: "https://www.anses.fr/en",
     tier: "evidence-backed",
   },
+  nih_zinc: {
+    key: "nih_zinc",
+    org: "NIH (ODS)",
+    title: "Zinc — fact sheet",
+    url: "https://ods.od.nih.gov/factsheets/Zinc-Consumer/",
+    tier: "evidence-backed",
+  },
+  nih_omega3: {
+    key: "nih_omega3",
+    org: "NIH (ODS)",
+    title: "Omega-3 fatty acids — fact sheet",
+    url: "https://ods.od.nih.gov/factsheets/Omega3FattyAcids-Consumer/",
+    tier: "evidence-backed",
+  },
+  nih_vitamin_a: {
+    key: "nih_vitamin_a",
+    org: "NIH (ODS)",
+    title: "Vitamin A — fact sheet",
+    url: "https://ods.od.nih.gov/factsheets/VitaminA-Consumer/",
+    tier: "evidence-backed",
+  },
   aap_growth: {
     key: "aap_growth",
     org: "AAP (HealthyChildren)",

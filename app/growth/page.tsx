@@ -146,16 +146,14 @@ export default function GrowthPage() {
         <div className="mt-6 grid gap-6 md:grid-cols-2">
           <div>
             <h3 className="text-sm font-semibold">Nutrient priorities</h3>
-            <ul className="mt-3 space-y-3">
+            <ul className="mt-3 space-y-2.5">
               {plan.priorities.map((p) => (
-                <li key={p.nutrient}>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium">{p.nutrient}</span>
-                    <span className="text-xs text-muted">{p.why}</span>
-                  </div>
-                  <div className="mt-1">
+                <li key={p.nutrient} className="rounded-xl border border-border bg-background/40 p-3.5">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-sm font-semibold">{p.nutrient}</span>
                     <EvidenceTag tier={p.tier} sourceKey={p.sourceKey} />
                   </div>
+                  <p className="mt-1.5 text-xs leading-snug text-muted">{p.why}</p>
                 </li>
               ))}
             </ul>

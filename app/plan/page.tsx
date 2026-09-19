@@ -58,7 +58,7 @@ export default function PlanPage() {
       {minor ? (
         <div className="mt-4 flex items-start gap-2 rounded-xl border border-accent/30 bg-accent/10 p-3 text-sm">
           <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-accent" />
-          <span>Under 18: this plan is health-first — habits and grooming, nothing extreme.</span>
+          <span>Under 18: this plan is health-first — habits and self-care, nothing extreme.</span>
         </div>
       ) : null}
 

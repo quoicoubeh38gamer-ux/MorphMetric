@@ -41,9 +41,9 @@ const RECO_TEMPLATES: Record<FeatureKey, RecoTemplate> = {
     sourceKey: "cdc_sleep",
   },
   brows: {
-    domain: "Grooming",
-    title: "Shape and groom your eyebrows",
-    body: "Light, consistent brow grooming frames the eyes and is fully within your control — no permanent change to natural density required.",
+    domain: "Styling",
+    title: "Shape and define your eyebrows",
+    body: "Light, consistent brow shaping frames the eyes and is fully within your control — no permanent change to natural density required.",
     controllability: "controllable",
     tier: "plausible",
   },

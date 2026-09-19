@@ -14,7 +14,7 @@ export const SEX_OPTIONS: { value: Sex; label: string }[] = [
 
 export const GOAL_OPTIONS: { value: string; label: string }[] = [
   { value: "skin", label: "Better skin" },
-  { value: "grooming", label: "Grooming & style" },
+  { value: "grooming", label: "Styling & self-care" },
   { value: "presentation", label: "Photo & presentation" },
   { value: "sleep", label: "Sleep & recovery" },
   { value: "nutrition", label: "Nutrition" },

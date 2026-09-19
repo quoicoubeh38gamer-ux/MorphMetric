@@ -1,9 +1,16 @@
-import { FEATURE_KEYS, type Confidence, type FeatureScore, type QualitySummary, type VisionResult } from "./types";
-import { FEATURE_META, summaryFor } from "./features";
+import {
+  FEATURE_KEYS,
+  type Confidence,
+  type FaceMetricsRaw,
+  type FeatureScore,
+  type QualitySummary,
+  type VisionResult,
+} from "./types";
+import { FEATURE_META, buildSubMetrics, summaryFor } from "./features";
 import { clamp } from "../utils/format";
 
 /** Map per-feature signals (0..1) into scored, annotated features (0..20). */
-export function scoreFeatures(vision: VisionResult): FeatureScore[] {
+export function scoreFeatures(vision: VisionResult, metricsRaw?: FaceMetricsRaw): FeatureScore[] {
   const real = vision.landmarksDetected;
   return FEATURE_KEYS.map((key) => {
     const meta = FEATURE_META[key];
@@ -21,6 +28,9 @@ export function scoreFeatures(vision: VisionResult): FeatureScore[] {
       confidence: vision.confidence[key],
       summary: summaryFor(key, score),
       whyItMatters: meta.whyItMatters,
+      anatomy: meta.anatomy,
+      detail: meta.detail,
+      subMetrics: buildSubMetrics(key, score, real ? metricsRaw : undefined),
       improve: meta.improve,
       fixed: meta.fixed,
       myths: meta.myths,

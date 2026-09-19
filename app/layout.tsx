@@ -34,7 +34,7 @@ export const metadata: Metadata = {
     "facial analysis",
     "face scan",
     "self improvement",
-    "grooming",
+    "styling",
     "skincare",
     "posture",
     "evidence-based",
