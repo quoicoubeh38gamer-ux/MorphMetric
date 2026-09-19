@@ -5,7 +5,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { Info, ScanFace, ShieldCheck, Sparkles, TrendingUp, TriangleAlert } from "lucide-react";
 import type { Controllability, FaceReport } from "@/lib/ai/types";
-import { store } from "@/lib/store";
+import { store, type ScanSnapshot } from "@/lib/store";
 import { score1 } from "@/lib/utils/format";
 import { ScoreRing } from "@/components/ui/score-ring";
 import { CountUp } from "@/components/ui/count-up";
@@ -17,6 +17,7 @@ import { ConfidenceBadge } from "@/components/ui/confidence-badge";
 import { EvidenceTag } from "@/components/ui/evidence-tag";
 import { ButtonLink, Button } from "@/components/ui/button";
 import { FeatureCard } from "@/components/results/feature-card";
+import { MorphCard } from "@/components/results/morph-card";
 import { Burst } from "@/components/ui/burst";
 import { ProGate } from "@/components/ui/pro-gate";
 
@@ -28,10 +29,12 @@ const CONTROL_LABEL: Record<Controllability, string> = {
 
 export default function ResultsPage() {
   const [report, setReport] = useState<FaceReport | null>(null);
+  const [history, setHistory] = useState<ScanSnapshot[]>([]);
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
     setReport(store.getReport());
+    setHistory(store.getHistory());
     setLoaded(true);
   }, []);
 
@@ -55,6 +58,9 @@ export default function ResultsPage() {
       </div>
     );
   }
+
+  const prevSnap = history.find((s) => s.id !== report.id);
+  const delta = prevSnap ? Math.round((report.morphScore - prevSnap.morphScore) * 10) / 10 : null;
 
   return (
     <div className="container max-w-5xl py-12 sm:py-16">
@@ -80,6 +86,12 @@ export default function ResultsPage() {
               <Badge tone="default">
                 {report.provider.startsWith("mediapipe") ? "AI · 468-point scan" : "Basic scan"}
               </Badge>
+              {delta !== null ? (
+                <Badge tone={delta >= 0 ? "accent" : "danger"}>
+                  {delta >= 0 ? "↑ +" : "↓ "}
+                  {Math.abs(delta).toFixed(1)} vs last
+                </Badge>
+              ) : null}
             </div>
             <h1 className="mt-4 font-display text-2xl font-semibold tracking-tight sm:text-3xl">
               Your strengths, mapped
@@ -287,8 +299,9 @@ export default function ResultsPage() {
           <p className="text-sm text-muted">Track habits and see your Body &amp; Growth support.</p>
         </div>
         <div className="flex flex-wrap gap-3">
+          <MorphCard report={report} />
+          <ButtonLink href="/plan">Glow-up plan</ButtonLink>
           <ButtonLink href="/dashboard" variant="secondary">Dashboard</ButtonLink>
-          <ButtonLink href="/growth">Body &amp; Growth</ButtonLink>
           <Button
             variant="ghost"
             onClick={() => {

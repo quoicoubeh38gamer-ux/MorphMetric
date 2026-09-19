@@ -135,6 +135,13 @@ export function ScanFlow() {
       const data = (await res.json()) as { report: import("@/lib/ai/types").FaceReport };
       store.setProfile(profile);
       store.setReport(data.report);
+      store.addSnapshot({
+        id: data.report.id,
+        createdAt: data.report.createdAt,
+        morphScore: data.report.morphScore,
+        potentialScore: data.report.potentialScore,
+        provider: data.report.provider,
+      });
       store.addXp(50);
       router.push("/results");
     } catch (e) {

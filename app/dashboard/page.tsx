@@ -5,7 +5,8 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { Activity, Flame, Moon, Salad, Sparkles, Trophy, Droplets, CheckCircle2, Circle } from "lucide-react";
 import type { FaceReport, GrowthInput } from "@/lib/ai/types";
-import { store, type CheckIn } from "@/lib/store";
+import { store, type CheckIn, type ScanSnapshot } from "@/lib/store";
+import { Sparkline } from "@/components/ui/sparkline";
 import { computeGrowthSupport } from "@/lib/ai/growth";
 import { computeStreak, levelFromXp } from "@/lib/gamification";
 import { greeting, score1 } from "@/lib/utils/format";
@@ -27,6 +28,7 @@ export default function DashboardPage() {
   const [growthInput, setGrowthInput] = useState<GrowthInput | null>(null);
   const [xp, setXp] = useState(0);
   const [checkins, setCheckins] = useState<CheckIn[]>([]);
+  const [history, setHistory] = useState<ScanSnapshot[]>([]);
   const [done, setDone] = useState<Record<string, boolean>>({});
   const [logged, setLogged] = useState(false);
 
@@ -35,8 +37,14 @@ export default function DashboardPage() {
     setGrowthInput(store.getGrowth());
     setXp(store.getXp());
     setCheckins(store.getCheckins());
+    setHistory(store.getHistory());
     setLoaded(true);
   }, []);
+
+  const chrono = useMemo(() => [...history].reverse().map((s) => s.morphScore), [history]);
+  const latest = history[0];
+  const prev = history[1];
+  const delta = latest && prev ? Math.round((latest.morphScore - prev.morphScore) * 10) / 10 : null;
 
   const level = useMemo(() => levelFromXp(xp), [xp]);
   const streak = useMemo(() => computeStreak(checkins), [checkins]);
@@ -190,6 +198,36 @@ export default function DashboardPage() {
           )}
         </Card>
       </div>
+
+      {/* Progress over time */}
+      <Card className="mt-5">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="font-display text-lg font-semibold">Your progress</h2>
+            <p className="text-sm text-muted">Morphology score across your scans.</p>
+          </div>
+          <Link href="/plan" className="text-xs text-primary hover:underline">Open plan →</Link>
+        </div>
+        {history.length >= 2 && latest ? (
+          <>
+            <div className="mt-4 flex items-end gap-3">
+              <span className="font-mono text-3xl font-semibold tabular">{score1(latest.morphScore)}</span>
+              {delta !== null ? (
+                <span className={`mb-1 text-sm ${delta >= 0 ? "text-accent" : "text-danger"}`}>
+                  {delta >= 0 ? "↑ +" : "↓ "}
+                  {score1(Math.abs(delta))} vs last scan
+                </span>
+              ) : null}
+            </div>
+            <Sparkline values={chrono} className="mt-3 h-16 w-full" />
+          </>
+        ) : (
+          <p className="mt-4 text-sm text-muted">
+            Run at least two scans to see your trend.{" "}
+            <Link href="/scan" className="text-primary hover:underline">Scan now →</Link>
+          </p>
+        )}
+      </Card>
 
       {/* Today's missions */}
       <Card className="mt-5">

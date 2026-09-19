@@ -1,9 +1,8 @@
 // Client-side persistence for the DB-less MVP.
 //
-// The latest report, the profile and check-ins live in localStorage. All reads
-// and writes are wrapped so the app renders correctly when storage is
-// unavailable (private mode, blocked, thumbnailing). `clearAll` powers the
-// "Delete my data" control.
+// Latest report, profile, check-ins, scan history and glow-up plan progress live
+// in localStorage. All reads/writes are wrapped so the app renders correctly
+// when storage is unavailable. `clearAll` powers "Delete my data".
 
 import type { FaceReport, GrowthInput, Profile } from "./ai/types";
 
@@ -14,6 +13,8 @@ const K = {
   growth: `${NS}growth`,
   checkins: `${NS}checkins`,
   xp: `${NS}xp`,
+  history: `${NS}history`,
+  plan: `${NS}plan`,
 } as const;
 
 function read<T>(key: string): T | null {
@@ -33,6 +34,22 @@ function write(key: string, value: unknown): void {
   } catch {
     /* storage unavailable — ignore */
   }
+}
+
+export interface CheckIn {
+  date: string; // ISO
+  sleepHours: number | null;
+  hydration: boolean;
+  meals: boolean;
+  activity: boolean;
+}
+
+export interface ScanSnapshot {
+  id: string;
+  createdAt: string;
+  morphScore: number;
+  potentialScore: number;
+  provider: string;
 }
 
 export const store = {
@@ -55,6 +72,22 @@ export const store = {
     write(K.checkins, list.slice(0, 60));
   },
 
+  // Scan history (most-recent first) for progress tracking.
+  getHistory: () => read<ScanSnapshot[]>(K.history) ?? [],
+  addSnapshot: (s: ScanSnapshot) => {
+    const list = read<ScanSnapshot[]>(K.history) ?? [];
+    list.unshift(s);
+    write(K.history, list.slice(0, 40));
+  },
+
+  // Glow-up plan task completion (taskId -> done).
+  getPlanProgress: () => read<Record<string, boolean>>(K.plan) ?? {},
+  setPlanTask: (id: string, done: boolean) => {
+    const p = read<Record<string, boolean>>(K.plan) ?? {};
+    p[id] = done;
+    write(K.plan, p);
+  },
+
   /** Delete my data: wipe every MorphMetric key from this browser. */
   clearAll: () => {
     if (typeof window === "undefined") return;
@@ -65,11 +98,3 @@ export const store = {
     }
   },
 };
-
-export interface CheckIn {
-  date: string; // ISO
-  sleepHours: number | null;
-  hydration: boolean;
-  meals: boolean;
-  activity: boolean;
-}
