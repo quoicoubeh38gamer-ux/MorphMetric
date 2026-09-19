@@ -1,11 +1,9 @@
 import { NextResponse } from "next/server";
 import { toNextJsHandler } from "better-auth/next-js";
-import { auth, authEnabled } from "@/lib/auth/auth";
+import { getAuth, authEnabled } from "@/lib/auth/auth";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
-
-const handlers = toNextJsHandler(auth);
 
 function notConfigured() {
   return NextResponse.json(
@@ -15,9 +13,11 @@ function notConfigured() {
 }
 
 export async function GET(req: Request): Promise<Response> {
-  return authEnabled ? handlers.GET(req) : notConfigured();
+  if (!authEnabled) return notConfigured();
+  return toNextJsHandler(getAuth()).GET(req);
 }
 
 export async function POST(req: Request): Promise<Response> {
-  return authEnabled ? handlers.POST(req) : notConfigured();
+  if (!authEnabled) return notConfigured();
+  return toNextJsHandler(getAuth()).POST(req);
 }
