@@ -4,11 +4,15 @@ import { clamp } from "../utils/format";
 
 /** Map per-feature signals (0..1) into scored, annotated features (0..20). */
 export function scoreFeatures(vision: VisionResult): FeatureScore[] {
+  const real = vision.landmarksDetected;
   return FEATURE_KEYS.map((key) => {
     const meta = FEATURE_META[key];
     const signal = vision.signals[key];
-    const raw = meta.center + (signal - 0.5) * meta.spread;
-    const score = Math.round(clamp(raw, 4, 20) * 10) / 10;
+    // Real landmark geometry drives the FULL honest range (a genuinely
+    // off feature lands well below 10). The heuristic fallback (no real face)
+    // stays moderate because there is no real signal to be harsh about.
+    const raw = real ? 3 + signal * 17 : meta.center + (signal - 0.5) * meta.spread;
+    const score = Math.round(clamp(raw, 2, 20) * 10) / 10;
     return {
       key,
       label: meta.label,
@@ -17,8 +21,9 @@ export function scoreFeatures(vision: VisionResult): FeatureScore[] {
       confidence: vision.confidence[key],
       summary: summaryFor(key, score),
       whyItMatters: meta.whyItMatters,
-      canInfluence: meta.canInfluence,
-      cannotReliablyChange: meta.cannotReliablyChange,
+      improve: meta.improve,
+      fixed: meta.fixed,
+      myths: meta.myths,
     };
   });
 }

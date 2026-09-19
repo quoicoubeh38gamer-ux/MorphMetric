@@ -42,6 +42,12 @@ export interface VisionResult {
   confidence: Record<FeatureKey, Confidence>;
 }
 
+export interface FeatureImprovement {
+  text: string;
+  tier: EvidenceTier;
+  sourceKey?: string;
+}
+
 export interface FeatureScore {
   key: FeatureKey;
   label: string;
@@ -50,8 +56,9 @@ export interface FeatureScore {
   confidence: Confidence;
   summary: string;
   whyItMatters: string;
-  canInfluence: string[];
-  cannotReliablyChange: string[];
+  improve: FeatureImprovement[]; // what genuinely helps, evidence-tagged
+  fixed: string[]; // what a photo/app can't change (structure)
+  myths: string[]; // popular but unsupported claims — honestly flagged
 }
 
 export interface Recommendation {

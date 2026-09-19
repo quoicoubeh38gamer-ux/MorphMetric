@@ -93,6 +93,13 @@ export const EVIDENCE_SOURCES: Record<string, EvidenceSource> = {
     url: "https://www.nhs.uk/live-well/exercise/how-to-sit-correctly/",
     tier: "plausible",
   },
+  nhs_orthodontics: {
+    key: "nhs_orthodontics",
+    org: "NHS",
+    title: "Orthodontics (structural jaw/teeth changes)",
+    url: "https://www.nhs.uk/conditions/orthodontics/",
+    tier: "evidence-backed",
+  },
 };
 
 export function getEvidence(key?: string): EvidenceSource | null {
