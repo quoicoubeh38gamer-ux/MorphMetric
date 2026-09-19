@@ -105,7 +105,7 @@ export const FEATURE_META: Record<FeatureKey, FeatureMeta> = {
     spread: 6,
     whyItMatters: "Brow shape frames the eyes and is one of the highest-return, most controllable features on the whole face.",
     anatomy:
-      "Brows sit on the supraorbital ridge (brow bone). Their arch, thickness and the space between them frame the orbit. Hair density and growth direction are genetic; shape and grooming are not.",
+      "Brows sit on the supraorbital ridge (brow bone). Their arch, thickness and the space between them frame the orbit. Hair density and growth direction are genetic; shape and upkeep are not.",
     detail:
       "Unlike bone, brows are almost entirely in your control. Shape, tidy strays, brush the hairs up and fill sparse gaps and you meaningfully change how the eyes and upper face read — with no permanent commitment. This is one of the fastest visible wins in the whole app.",
     improve: [
@@ -211,13 +211,19 @@ export const FEATURE_META: Record<FeatureKey, FeatureMeta> = {
   },
 };
 
-/** Direct, honest, non-shaming summary keyed to the score band. */
+/**
+ * Describes where a measurement sits relative to its reference range. Framed as
+ * an observation about this image, never as a judgement about the person.
+ */
 export function summaryFor(key: FeatureKey, score: number): string {
   const noun = FEATURE_META[key].label.toLowerCase();
-  if (score >= 15.5) return `Your ${noun} appears well balanced in this image and reads as a current strength.`;
-  if (score >= 12.5) return `Your ${noun} appears relatively balanced in this image.`;
-  if (score >= 9) return `Your ${noun} reads as somewhat off-balance in this image — a solid area to work on.`;
-  return `Your ${noun} reads as clearly off-balance in this image — worth making a priority.`;
+  if (score >= 15.5)
+    return `In this image, your ${noun} measures within the reference range across the characteristics we can assess.`;
+  if (score >= 12.5)
+    return `In this image, your ${noun} measures close to the reference range.`;
+  if (score >= 9)
+    return `In this image, one or more ${noun} measurements sit outside the reference range — a useful place to focus what you can influence.`;
+  return `In this image, several ${noun} measurements sit well outside the reference range. Note that reference ranges are a coordinate system, not a target everyone should meet.`;
 }
 
 // --- Precise per-region sub-scores -----------------------------------------

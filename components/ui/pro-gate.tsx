@@ -30,7 +30,7 @@ export function ProGate({
         <span className="grid h-11 w-11 place-items-center rounded-full bg-primary/15 text-primary">
           <Lock className="h-5 w-5" />
         </span>
-        <p className="font-display text-lg font-semibold">{title}</p>
+        <p className="font-display text-lg">{title}</p>
         <p className="max-w-xs text-sm text-muted">{subtitle}</p>
         <Link
           href="/#pricing"

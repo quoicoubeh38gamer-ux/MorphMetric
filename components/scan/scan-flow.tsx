@@ -162,7 +162,7 @@ export function ScanFlow() {
         {step === "profile" && (
           <motion.div key="profile" {...fade}>
             <div className="card-base p-6 sm:p-8">
-              <h2 className="font-display text-2xl font-semibold">A few basics</h2>
+              <h2 className="font-display text-2xl">A few basics</h2>
               <p className="mt-2 text-sm text-muted">
                 We only ask for what genuinely improves your analysis. Everything here is optional.
               </p>
@@ -256,7 +256,7 @@ export function ScanFlow() {
         {step === "capture" && (
           <motion.div key="capture" {...fade}>
             <div className="card-base p-6 sm:p-8">
-              <h2 className="font-display text-2xl font-semibold">Face scan</h2>
+              <h2 className="font-display text-2xl">Face scan</h2>
 
               <div className="mt-4 flex items-start gap-2 rounded-xl border border-border bg-card/60 p-3 text-sm text-muted">
                 <Lock className="mt-0.5 h-4 w-4 shrink-0 text-accent" />
@@ -408,7 +408,7 @@ export function ScanFlow() {
                 <div className="absolute inset-0 rounded-full border-2 border-primary/40 border-t-primary animate-spin" />
                 <ScanFace className="h-10 w-10 text-primary" />
               </div>
-              <h2 className="mt-8 font-display text-2xl font-semibold">Analyzing</h2>
+              <h2 className="mt-8 font-display text-2xl">Analyzing</h2>
               <AnimatePresence mode="wait">
                 <motion.p
                   key={scanMsg}

@@ -45,7 +45,7 @@ export function Navbar() {
           <ThemeToggle />
           <div className="hidden sm:block">
             <ButtonLink href="/scan" size="sm">
-              Start your analysis
+              Analyze My Face
             </ButtonLink>
           </div>
           <button
@@ -84,7 +84,7 @@ export function Navbar() {
               Log in
             </Link>
             <ButtonLink href="/scan" className="mt-1 w-full">
-              Start your analysis
+              Analyze My Face
             </ButtonLink>
           </div>
         </div>

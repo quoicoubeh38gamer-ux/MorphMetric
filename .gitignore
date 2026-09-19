@@ -21,9 +21,9 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# local env files
-.env
-.env*.local
+# local env files — ignore every .env variant, keep only the template
+.env*
+!.env.example
 
 # prisma
 /prisma/*.db

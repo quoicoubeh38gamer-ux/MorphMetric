@@ -1,19 +1,20 @@
 import type { Metadata } from "next";
-import { Manrope, Cormorant_Garamond, JetBrains_Mono } from "next/font/google";
+import { Manrope, Instrument_Serif, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { Navbar } from "@/components/site/navbar";
 import { Footer } from "@/components/site/footer";
 import { AnimatedBackground } from "@/components/ui/animated-background";
 import { siteUrl } from "@/lib/site-url";
 
-// Manrope — clean, luminous body sans. Cormorant Garamond — an ethereal,
-// high-contrast serif for headings (the "angelic" voice of the brand).
+// Manrope carries the interface. Instrument Serif is the editorial voice —
+// used only for headlines, where its high contrast reads as considered rather
+// than decorative.
 const sans = Manrope({ subsets: ["latin"], variable: "--font-sans", display: "swap" });
-const display = Cormorant_Garamond({
+const display = Instrument_Serif({
   subsets: ["latin"],
   variable: "--font-display",
   display: "swap",
-  weight: ["500", "600", "700"],
+  weight: ["400"],
 });
 const mono = JetBrains_Mono({ subsets: ["latin"], variable: "--font-mono", display: "swap" });
 

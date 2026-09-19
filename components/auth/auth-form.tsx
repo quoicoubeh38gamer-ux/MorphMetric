@@ -54,7 +54,7 @@ export function AuthForm({ mode }: { mode: "login" | "signup" }) {
       <div className="w-full max-w-md">
         <div className="mb-8 flex flex-col items-center text-center">
           <Logo />
-          <h1 className="mt-6 font-display text-2xl font-semibold tracking-tight">
+          <h1 className="mt-6 font-display text-2xl tracking-tight">
             {isSignup ? "Create your account" : "Welcome back"}
           </h1>
           <p className="mt-2 text-sm text-muted">

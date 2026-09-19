@@ -66,7 +66,7 @@ export default function GrowthPage() {
   return (
     <div className="container max-w-5xl py-12">
       <Badge tone="accent"><Activity className="h-3.5 w-3.5" /> Body &amp; Growth</Badge>
-      <h1 className="mt-4 font-display text-3xl font-semibold tracking-tight">Growth Support</h1>
+      <h1 className="mt-4 font-display text-3xl tracking-tight">Growth Support</h1>
       <p className="mt-2 max-w-2xl text-muted">
         This section is fully separate from your face score. It describes habits
         associated with healthy development — it does not predict height.
@@ -75,7 +75,7 @@ export default function GrowthPage() {
       <div className="mt-8 grid gap-5 lg:grid-cols-[1fr_1.1fr]">
         {/* Inputs */}
         <Card>
-          <h2 className="font-display text-lg font-semibold">Your habits</h2>
+          <h2 className="font-display text-lg">Your habits</h2>
           <p className="text-sm text-muted">Adjust to see your support score update live.</p>
 
           <div className="mt-6 space-y-6">
@@ -96,7 +96,7 @@ export default function GrowthPage() {
         {/* Support scores */}
         <Card>
           <div className="flex items-center justify-between">
-            <h2 className="font-display text-lg font-semibold">Growth Support</h2>
+            <h2 className="font-display text-lg">Growth Support</h2>
             <Badge tone="default">Trend: {support.trend}</Badge>
           </div>
           <div className="mt-3 flex items-end gap-2">
@@ -138,7 +138,7 @@ export default function GrowthPage() {
 
       {/* Nutrition plan */}
       <Card className="mt-5">
-        <h2 className="font-display text-lg font-semibold">{plan.headline}</h2>
+        <h2 className="font-display text-lg">{plan.headline}</h2>
         <div className="mt-2 flex items-start gap-2 rounded-xl border border-border bg-background/40 p-3 text-sm text-muted">
           <Info className="mt-0.5 h-4 w-4 shrink-0" /> {plan.disclaimer}
         </div>

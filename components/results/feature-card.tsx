@@ -6,23 +6,9 @@ import { Badge } from "@/components/ui/badge";
 import { ConfidenceBadge } from "@/components/ui/confidence-badge";
 import { EvidenceTag } from "@/components/ui/evidence-tag";
 import { score1 } from "@/lib/utils/format";
+import { scoreTone, TONE_TEXT, type ScoreTone } from "@/lib/utils/score";
 
-function scoreTone(score: number): "accent" | "primary" | "warning" | "danger" {
-  if (score >= 15.5) return "accent";
-  if (score >= 12.5) return "primary";
-  if (score >= 9) return "warning";
-  return "danger";
-}
-
-function toneClass(tone: ReturnType<typeof scoreTone>): string {
-  return tone === "accent"
-    ? "text-accent"
-    : tone === "warning"
-      ? "text-warning"
-      : tone === "danger"
-        ? "text-danger"
-        : "text-primary";
-}
+const toneClass = (tone: ScoreTone): string => TONE_TEXT[tone];
 
 function SubMetricRow({ sub }: { sub: SubMetric }) {
   const tone = scoreTone(sub.score);
@@ -46,14 +32,16 @@ function SubMetricRow({ sub }: { sub: SubMetric }) {
         </div>
       ) : null}
 
-      <div className="mt-1.5 flex items-center justify-between gap-2 text-[11px] text-muted">
-        <span>
-          you <span className="font-mono text-foreground">{sub.value}</span>
-        </span>
-        <span>
-          target <span className="font-mono">{sub.ideal}</span>
-        </span>
-      </div>
+      {sub.measured ? (
+        <div className="mt-1.5 flex items-center justify-between gap-2 text-[11px] text-muted">
+          <span>
+            you <span className="font-mono text-foreground">{sub.value}</span>
+          </span>
+          <span>
+            reference <span className="font-mono">{sub.ideal}</span>
+          </span>
+        </div>
+      ) : null}
       <p className="mt-1.5 text-[11px] leading-snug text-muted">{sub.note}</p>
     </div>
   );
@@ -66,7 +54,7 @@ export function FeatureCard({ feature }: { feature: FeatureScore }) {
     <Card className="h-full">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <h3 className="font-display text-lg font-semibold">{feature.label}</h3>
+          <h3 className="font-display text-lg">{feature.label}</h3>
           <span className="text-xs uppercase tracking-wider text-muted">{feature.category}</span>
         </div>
         <div className="text-right">
@@ -90,7 +78,7 @@ export function FeatureCard({ feature }: { feature: FeatureScore }) {
       {feature.subMetrics && feature.subMetrics.length > 0 ? (
         <div className="mt-4">
           <p className="flex items-center gap-1.5 text-xs font-medium text-primary">
-            <Ruler className="h-3.5 w-3.5" /> Precise breakdown
+            <Ruler className="h-3.5 w-3.5" /> Measured characteristics
           </p>
           <div className="mt-2 space-y-2">
             {feature.subMetrics.map((s) => (

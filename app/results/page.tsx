@@ -17,6 +17,8 @@ import { ConfidenceBadge } from "@/components/ui/confidence-badge";
 import { EvidenceTag } from "@/components/ui/evidence-tag";
 import { ButtonLink, Button } from "@/components/ui/button";
 import { FeatureCard } from "@/components/results/feature-card";
+import { FaceMap } from "@/components/results/face-map";
+import { MethodologyDialog } from "@/components/results/methodology-dialog";
 import { MorphCard } from "@/components/results/morph-card";
 import { Burst } from "@/components/ui/burst";
 import { ProGate } from "@/components/ui/pro-gate";
@@ -51,7 +53,7 @@ export default function ResultsPage() {
       <div className="container py-24">
         <Card className="mx-auto max-w-md text-center">
           <ScanFace className="mx-auto h-10 w-10 text-primary" />
-          <h1 className="mt-4 font-display text-2xl font-semibold">No analysis yet</h1>
+          <h1 className="mt-4 font-display text-2xl">No analysis yet</h1>
           <p className="mt-2 text-sm text-muted">Run a scan to see your MorphMetric and roadmap.</p>
           <ButtonLink href="/scan" className="mt-6">Start your analysis</ButtonLink>
         </Card>
@@ -92,9 +94,10 @@ export default function ResultsPage() {
                   {Math.abs(delta).toFixed(1)} vs last
                 </Badge>
               ) : null}
+              <MethodologyDialog />
             </div>
-            <h1 className="mt-4 font-display text-2xl font-semibold tracking-tight sm:text-3xl">
-              Your strengths, mapped
+            <h1 className="mt-4 font-display text-2xl tracking-tight sm:text-3xl">
+              Your measurements
             </h1>
             <p className="mt-2 flex items-start gap-2 text-sm text-muted">
               <Info className="mt-0.5 h-4 w-4 shrink-0" />
@@ -133,9 +136,9 @@ export default function ResultsPage() {
           <div className="relative mt-6 flex items-center gap-3 rounded-2xl border border-accent/30 bg-accent/10 p-4">
             <Sparkles className="h-5 w-5 shrink-0 text-accent" />
             <p className="text-sm">
-              <span className="text-muted">Your standout feature is </span>
+              <span className="text-muted">Closest to its reference range: </span>
               <span className="font-semibold text-foreground">{report.strengths[0].label}</span>
-              <span className="text-muted"> — lead with it.</span>
+              <span className="text-muted"> — a current strength.</span>
             </p>
           </div>
         ) : null}
@@ -150,7 +153,7 @@ export default function ResultsPage() {
 
       {/* Breakdown */}
       <section className="mt-12">
-        <h2 className="font-display text-xl font-semibold">Score breakdown</h2>
+        <h2 className="font-display text-2xl tracking-tight">Measurement breakdown</h2>
         <div className="mt-5 grid gap-4 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
           <div className="card-base flex items-center justify-center p-4">
             <div className="aspect-square w-full max-w-sm">
@@ -178,42 +181,21 @@ export default function ResultsPage() {
         </div>
       </section>
 
-      {/* Methodology */}
-      <section className="mt-12">
-        <div className="card-base p-6">
-          <div className="flex items-center gap-2">
-            <ShieldCheck className="h-5 w-5 text-accent" />
-            <h2 className="font-display text-xl font-semibold">How your MorphMetric is calculated</h2>
-          </div>
-          <p className="mt-2 text-sm text-muted">
-            No black box. Here&apos;s exactly what happens to your photo — and what we deliberately
-            don&apos;t claim.
-          </p>
-          <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {[
-              { n: "01", t: "468-point mesh", d: "A vision model maps your face on your device and extracts real geometry — never sent to a server as an image." },
-              { n: "02", t: "Anatomical ratios", d: "Thirds, fWHR, canthal tilt, eye spacing, nasal & mouth width, jaw width and symmetry are measured against neutral reference ranges." },
-              { n: "03", t: "Weighted score", d: "Each region is scored 0–20 and combined by weight into your MorphMetric, with a confidence level on every estimate." },
-              { n: "04", t: "Honest limits", d: "A flat 2D photo can't judge depth (nose projection, jaw bone). Those are flagged as estimated, not scored precisely." },
-            ].map((s) => (
-              <div key={s.n} className="rounded-2xl border border-border bg-background/40 p-4">
-                <span className="font-mono text-xs text-primary">{s.n}</span>
-                <p className="mt-2 font-medium">{s.t}</p>
-                <p className="mt-1.5 text-xs leading-snug text-muted">{s.d}</p>
-              </div>
-            ))}
-          </div>
-          <p className="mt-4 text-xs text-muted">
-            The MorphMetric is an internal, relative metric to improve from — not an objective measure
-            of attractiveness or worth. We never promise to change bone structure.
-          </p>
+      {/* Interactive face map */}
+      <section className="mt-14">
+        <div className="flex flex-wrap items-baseline justify-between gap-2">
+          <h2 className="font-display text-2xl tracking-tight">Face map</h2>
+          <p className="text-sm text-muted">Point at a region to see what was measured there.</p>
+        </div>
+        <div className="mt-5">
+          <FaceMap features={report.features} />
         </div>
       </section>
 
       {/* Detailed measurements */}
       {report.metrics.length > 0 ? (
         <section className="mt-12">
-          <h2 className="font-display text-xl font-semibold">Detailed measurements</h2>
+          <h2 className="font-display text-2xl tracking-tight">Detailed measurements</h2>
           <p className="mt-1 text-sm text-muted">
             Real ratios from your 468-point mesh. Reference values are guides, not targets.
           </p>
@@ -233,7 +215,7 @@ export default function ResultsPage() {
       {report.comparisons.length > 0 ? (
         <section className="mt-12">
           <div className="flex items-center gap-2">
-            <h2 className="font-display text-xl font-semibold">Harmony</h2>
+            <h2 className="font-display text-2xl tracking-tight">Harmony</h2>
             <Badge tone="primary">{report.harmonyScore}/100</Badge>
           </div>
           <p className="mt-1 text-sm text-muted">
@@ -266,7 +248,7 @@ export default function ResultsPage() {
         <Card>
           <div className="flex items-center gap-2">
             <span className="h-2 w-2 rounded-full bg-accent" />
-            <h2 className="font-display text-lg font-semibold">Your strengths</h2>
+            <h2 className="font-display text-xl tracking-tight">Closest to reference</h2>
           </div>
           <ol className="mt-4 space-y-3">
             {report.strengths.map((s, i) => (
@@ -283,7 +265,7 @@ export default function ResultsPage() {
         <Card>
           <div className="flex items-center gap-2">
             <span className="h-2 w-2 rounded-full bg-primary" />
-            <h2 className="font-display text-lg font-semibold">Areas to optimize</h2>
+            <h2 className="font-display text-xl tracking-tight">Most headroom</h2>
           </div>
           <ol className="mt-4 space-y-3">
             {report.focusAreas.map((s, i) => (
@@ -301,7 +283,7 @@ export default function ResultsPage() {
 
       {/* Roadmap */}
       <section className="mt-12">
-        <h2 className="font-display text-xl font-semibold">Your roadmap</h2>
+        <h2 className="font-display text-2xl tracking-tight">Your roadmap</h2>
         <p className="mt-1 text-sm text-muted">Three focused actions — no overload.</p>
         <div className="mt-5 grid gap-4 lg:grid-cols-3">
           {report.roadmap.map((r) => (
@@ -324,7 +306,7 @@ export default function ResultsPage() {
       {/* Advanced insights (Pro) */}
       <section className="mt-12">
         <div className="mb-4 flex items-center gap-2">
-          <h2 className="font-display text-xl font-semibold">Advanced insights</h2>
+          <h2 className="font-display text-2xl tracking-tight">Advanced insights</h2>
           <Badge tone="primary"><Sparkles className="h-3.5 w-3.5" /> Pro</Badge>
         </div>
         <ProGate
@@ -348,7 +330,7 @@ export default function ResultsPage() {
 
       {/* Feature detail */}
       <section className="mt-12">
-        <h2 className="font-display text-xl font-semibold">Feature detail</h2>
+        <h2 className="font-display text-2xl tracking-tight">Region detail</h2>
         <div className="mt-5 grid gap-4 md:grid-cols-2">
           {report.features.map((f) => (
             <FeatureCard key={f.key} feature={f} />

@@ -34,7 +34,7 @@ const POINTS = [
 export default function PrivacyPage() {
   return (
     <div className="container max-w-3xl py-14">
-      <h1 className="font-display text-3xl font-semibold tracking-tight sm:text-4xl">Privacy &amp; data</h1>
+      <h1 className="font-display text-3xl tracking-tight sm:text-4xl">Privacy &amp; data</h1>
       <p className="mt-3 text-muted">
         Face photos are sensitive data, and MorphMetric treats them that way.
         Here&apos;s exactly how your information is handled.
@@ -51,7 +51,7 @@ export default function PrivacyPage() {
       </div>
 
       <Card className="mt-6">
-        <h2 className="font-display text-lg font-semibold">Your control</h2>
+        <h2 className="font-display text-lg">Your control</h2>
         <p className="mt-2 text-sm text-muted">
           You can delete everything MorphMetric has stored in this browser at any
           time. This removes your saved report, profile, check-ins and progress.

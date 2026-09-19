@@ -1,10 +1,12 @@
 import type { Config } from "tailwindcss";
 
 /**
- * MorphMetric — "Celestial" design system.
- * Colors are driven by CSS variables (see app/globals.css) so the same tokens
- * serve the luminous light default and the celestial-night dark theme without
- * duplicating classes.
+ * MorphMetric design system.
+ *
+ * Colours are driven by CSS variables (see app/globals.css) so one token set
+ * serves both themes. The palette is deliberately narrow: ink, off-white,
+ * silver and three pearlescent tints. Anything louder than this does not
+ * belong in the product.
  */
 const config: Config = {
   darkMode: ["class", '[data-theme="dark"]'],
@@ -16,8 +18,8 @@ const config: Config = {
   theme: {
     container: {
       center: true,
-      padding: { DEFAULT: "1rem", sm: "1.5rem", lg: "2rem" },
-      screens: { "2xl": "1200px" },
+      padding: { DEFAULT: "1.25rem", sm: "2rem", lg: "2.5rem" },
+      screens: { "2xl": "1180px" },
     },
     extend: {
       colors: {
@@ -40,11 +42,10 @@ const config: Config = {
           DEFAULT: "hsl(var(--accent) / <alpha-value>)",
           foreground: "hsl(var(--accent-foreground) / <alpha-value>)",
         },
-        halo: {
-          gold: "hsl(var(--halo-gold) / <alpha-value>)",
-          violet: "hsl(var(--halo-violet) / <alpha-value>)",
-          sky: "hsl(var(--halo-sky) / <alpha-value>)",
-          rose: "hsl(var(--halo-rose) / <alpha-value>)",
+        tint: {
+          silver: "hsl(var(--tint-silver) / <alpha-value>)",
+          blue: "hsl(var(--tint-blue) / <alpha-value>)",
+          lavender: "hsl(var(--tint-lavender) / <alpha-value>)",
         },
         success: "hsl(var(--success) / <alpha-value>)",
         warning: "hsl(var(--warning) / <alpha-value>)",
@@ -55,29 +56,28 @@ const config: Config = {
         display: ["var(--font-display)", "Georgia", "serif"],
         mono: ["var(--font-mono)", "ui-monospace", "monospace"],
       },
+      letterSpacing: {
+        tightest: "-0.04em",
+      },
       borderRadius: {
-        lg: "1rem",
-        xl: "1.25rem",
-        "2xl": "1.5rem",
-        "3xl": "2rem",
+        lg: "0.75rem",
+        xl: "1rem",
+        "2xl": "1.25rem",
+        "3xl": "1.75rem",
       },
       boxShadow: {
-        soft: "0 1px 2px 0 hsl(var(--shadow) / 0.06), 0 14px 44px -18px hsl(var(--shadow) / 0.28)",
-        glow: "0 0 0 1px hsl(var(--halo-gold) / 0.22), 0 14px 44px -12px hsl(var(--halo-gold) / 0.5)",
-        halo: "0 0 0 1px hsl(var(--halo-gold) / 0.2), 0 0 40px -4px hsl(var(--halo-gold) / 0.55), 0 0 80px -12px hsl(var(--halo-violet) / 0.4)",
-        celestial: "0 0 60px -10px hsl(var(--halo-violet) / 0.55)",
+        // Neutral elevation. No coloured drop shadows anywhere.
+        soft: "0 1px 2px -1px hsl(var(--shadow) / 0.08), 0 6px 20px -12px hsl(var(--shadow) / 0.22)",
+        lift: "0 2px 4px -2px hsl(var(--shadow) / 0.1), 0 14px 40px -18px hsl(var(--shadow) / 0.3)",
+        glow: "0 0 0 1px hsl(var(--accent) / 0.16), 0 10px 30px -14px hsl(var(--accent) / 0.35)",
       },
       backgroundImage: {
         "grid-fade":
-          "radial-gradient(circle at 50% 0%, hsl(var(--halo-gold) / 0.14), transparent 62%)",
-        "divine":
-          "linear-gradient(135deg, hsl(var(--halo-gold)), hsl(var(--accent)) 48%, hsl(var(--halo-sky)))",
-        "aura":
-          "radial-gradient(circle at 50% 30%, hsl(var(--halo-gold) / 0.22), transparent 55%), radial-gradient(circle at 20% 80%, hsl(var(--halo-violet) / 0.2), transparent 55%), radial-gradient(circle at 85% 75%, hsl(var(--halo-sky) / 0.18), transparent 55%)",
+          "radial-gradient(circle at 50% 0%, hsl(var(--tint-blue) / 0.08), transparent 62%)",
       },
       keyframes: {
         "fade-up": {
-          from: { opacity: "0", transform: "translateY(14px)" },
+          from: { opacity: "0", transform: "translateY(10px)" },
           to: { opacity: "1", transform: "translateY(0)" },
         },
         "fade-in": {
@@ -86,65 +86,43 @@ const config: Config = {
         },
         "scan-sweep": {
           "0%": { transform: "translateY(-120%)", opacity: "0" },
-          "20%": { opacity: "1" },
-          "80%": { opacity: "1" },
+          "22%": { opacity: "1" },
+          "78%": { opacity: "1" },
           "100%": { transform: "translateY(120%)", opacity: "0" },
         },
         "pulse-ring": {
-          "0%, 100%": { opacity: "0.35", transform: "scale(1)" },
-          "50%": { opacity: "0.9", transform: "scale(1.12)" },
+          "0%, 100%": { opacity: "0.3", transform: "scale(1)" },
+          "50%": { opacity: "0.65", transform: "scale(1.08)" },
+        },
+        breathe: {
+          "0%, 100%": { opacity: "0.55" },
+          "50%": { opacity: "0.9" },
+        },
+        float: {
+          "0%, 100%": { transform: "translateY(0)" },
+          "50%": { transform: "translateY(-6px)" },
         },
         shimmer: {
           "100%": { transform: "translateX(100%)" },
         },
-        float: {
-          "0%, 100%": { transform: "translateY(0)" },
-          "50%": { transform: "translateY(-10px)" },
-        },
-        "float-slow": {
-          "0%, 100%": { transform: "translateY(0) translateX(0)" },
-          "33%": { transform: "translateY(-14px) translateX(6px)" },
-          "66%": { transform: "translateY(8px) translateX(-6px)" },
-        },
-        twinkle: {
-          "0%, 100%": { opacity: "0.2", transform: "scale(0.8)" },
-          "50%": { opacity: "1", transform: "scale(1.15)" },
-        },
-        "halo-breathe": {
-          "0%, 100%": { opacity: "0.5", transform: "scale(1)" },
-          "50%": { opacity: "1", transform: "scale(1.06)" },
-        },
         "spin-slow": {
           to: { transform: "rotate(360deg)" },
         },
-        "sparkle-pop": {
-          "0%": { opacity: "0", transform: "scale(0) rotate(0deg)" },
-          "50%": { opacity: "1", transform: "scale(1) rotate(90deg)" },
-          "100%": { opacity: "0", transform: "scale(0) rotate(180deg)" },
-        },
-        "rise-glow": {
-          from: { opacity: "0", transform: "translateY(20px)", filter: "blur(6px)" },
-          to: { opacity: "1", transform: "translateY(0)", filter: "blur(0)" },
-        },
-        "border-flow": {
-          "0%, 100%": { backgroundPosition: "0% 50%" },
-          "50%": { backgroundPosition: "100% 50%" },
+        rise: {
+          from: { opacity: "0", transform: "translateY(16px)" },
+          to: { opacity: "1", transform: "translateY(0)" },
         },
       },
       animation: {
         "fade-up": "fade-up 0.7s cubic-bezier(0.22, 1, 0.36, 1) both",
         "fade-in": "fade-in 0.6s ease both",
-        "scan-sweep": "scan-sweep 2.6s ease-in-out infinite",
-        "pulse-ring": "pulse-ring 2.6s ease-in-out infinite",
-        shimmer: "shimmer 1.8s infinite",
-        float: "float 6s ease-in-out infinite",
-        "float-slow": "float-slow 11s ease-in-out infinite",
-        twinkle: "twinkle 3.4s ease-in-out infinite",
-        "halo-breathe": "halo-breathe 5s ease-in-out infinite",
-        "spin-slow": "spin-slow 26s linear infinite",
-        "sparkle-pop": "sparkle-pop 1.8s ease-in-out infinite",
-        "rise-glow": "rise-glow 0.9s cubic-bezier(0.22, 1, 0.36, 1) both",
-        "border-flow": "border-flow 8s ease infinite",
+        "scan-sweep": "scan-sweep 3.4s cubic-bezier(0.4, 0, 0.2, 1) infinite",
+        "pulse-ring": "pulse-ring 3.2s ease-in-out infinite",
+        breathe: "breathe 6s ease-in-out infinite",
+        float: "float 8s ease-in-out infinite",
+        shimmer: "shimmer 2s infinite",
+        "spin-slow": "spin-slow 40s linear infinite",
+        rise: "rise 0.8s cubic-bezier(0.22, 1, 0.36, 1) both",
       },
     },
   },

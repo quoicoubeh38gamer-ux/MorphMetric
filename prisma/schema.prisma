@@ -141,6 +141,7 @@ model Scan {
   analysis     Analysis?
 
   @@index([userId])
+  @@index([deleteAt])
 }
 
 model Analysis {
@@ -281,6 +282,7 @@ model UserBadge {
 enum Plan {
   FREE
   PRO
+  PREMIUM
 }
 
 enum SubscriptionStatus {
@@ -295,8 +297,8 @@ model Subscription {
   userId               String             @unique
   plan                 Plan               @default(FREE)
   status               SubscriptionStatus @default(NONE)
-  stripeCustomerId     String?
-  stripeSubscriptionId String?
+  stripeCustomerId     String?            @unique
+  stripeSubscriptionId String?            @unique
   currentPeriodEnd     DateTime?
   user                 User               @relation(fields: [userId], references: [id], onDelete: Cascade)
 }

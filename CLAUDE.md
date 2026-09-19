@@ -194,6 +194,56 @@ file. Never rewrite a working feature arbitrarily.
   dashboard animated gradient level bar, XP count-up, pulsing streak, check-in
   burst + floating XP.
 
+### Design system rebuild + security hardening (current)
+- **Art direction reset**: the gold/violet "celestial" pass was replaced by a
+  restrained system — off-white, deep black, silver, and three pearlescent
+  tints (blue, lavender, silver) used only for washes and data-viz. Primary is
+  ink in light / off-white in dark. Depth now comes from elevation, hairlines
+  and film grain rather than gradients. Tokens: `--tint-*` (see globals.css).
+- **Type**: Manrope for interface, Instrument Serif (single 400 weight) for
+  headlines. A codemod strips `font-semibold/bold` from any `font-display`
+  class string so the serif is never faux-bolded.
+- **Landing rebuilt**: new hero ("Understand Your Face. Understand Your
+  Features." / "Analyze My Face"), how-it-works, per-region measurement map,
+  evidence tiers, privacy section, 3-tier pricing, testimonials (labelled
+  placeholders), FAQ (native `<details>`), final CTA.
+- **Interactive face map** (`components/results/face-map.tsx`): six spatial
+  regions + two non-spatial chips; hover, tap and keyboard focus all select.
+  Panel shows the region's measured sub-metrics vs reference, and the anatomy.
+- **"How is this calculated?"** modal (`components/ui/modal.tsx` — Escape,
+  backdrop, focus restore) replaces the inline methodology block.
+- **Vocabulary**: measurements are framed against *reference ranges*, never as
+  verdicts ("In this image, X measures close to the reference range"). The word
+  "grooming" is gone from the product entirely.
+- **Plans**: Free / Pro / Premium in `lib/subscription.ts` with a declarative
+  feature matrix + `requiredPlan()`; Prisma `Plan` enum gained PREMIUM.
+
+### Security audit (findings fixed)
+- Rate-limit key was attacker-controlled (`x-forwarded-for` spoof) → now
+  prefers platform headers; bucket map is swept and capped (was unbounded).
+- WebP magic-byte check accepted any RIFF container (a .wav passed) → now also
+  verifies the `WEBP` form type, and rejects a declared type that disagrees
+  with the real bytes.
+- `/api/analyze` leaked zod schema internals on 422 → unified `apiError`
+  (`lib/security/errors.ts`): user-safe message + request id to the client,
+  diagnostics to the server log only. Body size bounded before parsing.
+- `.gitignore` missed `.env.production` → now `.env*` with `!.env.example`.
+- CSP gained `frame-src 'none'`, `manifest-src`, `media-src`; added
+  Cross-Origin-Resource-Policy.
+- Prisma: unique indexes on Stripe ids (safe webhook lookup), index on
+  `Scan.deleteAt` for retention sweeps.
+- Noted as accepted/by-design: no analysis is stored server-side (localStorage
+  only), so there is no per-analysis object to enumerate — the IDOR surface
+  does not exist yet. CSP still needs `'unsafe-inline'` for Next's hydration
+  bootstrap until a nonce middleware lands.
+
+### Still to do (next batch)
+- Style Lab, AI Coach, PDF export, side-by-side analysis comparison.
+- Dashboard sidebar shell (Overview / Measurements / Insights / History /
+  Progress / Style / Settings).
+- Onboarding flow as discrete steps with an explicit consent gate.
+- Move persistence server-side (with ownership checks) once accounts are live.
+
 ### To do
 - Connect Postgres (e.g. Vercel Storage) + set AUTH_SECRET/APP_URL → test the
   live sign-up/login flow (not testable from the build container).

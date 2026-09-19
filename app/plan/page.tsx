@@ -50,7 +50,7 @@ export default function PlanPage() {
   return (
     <div className="container max-w-4xl py-12">
       <Badge tone="primary"><CalendarRange className="h-3.5 w-3.5" /> Glow-up plan</Badge>
-      <h1 className="mt-4 font-display text-3xl font-semibold tracking-tight">Your 4-week glow-up</h1>
+      <h1 className="mt-4 font-display text-3xl tracking-tight">Your 4-week glow-up</h1>
       <p className="mt-2 max-w-2xl text-muted">
         A focused, week-by-week plan built only from things you control. Check items off to earn XP.
       </p>
@@ -96,7 +96,7 @@ export default function PlanPage() {
                     <span className="grid h-8 w-8 place-items-center rounded-lg bg-primary/10 font-mono text-sm text-primary">
                       W{wk.week}
                     </span>
-                    <h2 className="font-display text-lg font-semibold">{wk.title}</h2>
+                    <h2 className="font-display text-lg">{wk.title}</h2>
                   </div>
                   <p className="mt-2 text-sm text-muted">{wk.focus}</p>
                 </div>

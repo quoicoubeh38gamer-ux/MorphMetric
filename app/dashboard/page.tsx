@@ -82,7 +82,7 @@ export default function DashboardPage() {
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <p className="text-sm text-muted">{greeting()}.</p>
-          <h1 className="mt-1 font-display text-3xl font-semibold tracking-tight">Your dashboard</h1>
+          <h1 className="mt-1 font-display text-3xl tracking-tight">Your dashboard</h1>
         </div>
         <div className="flex flex-wrap gap-2">
           <Badge tone="primary"><Trophy className="h-3.5 w-3.5" /> Level {level.level}</Badge>
@@ -203,7 +203,7 @@ export default function DashboardPage() {
       <Card className="mt-5">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="font-display text-lg font-semibold">Your progress</h2>
+            <h2 className="font-display text-lg">Your progress</h2>
             <p className="text-sm text-muted">Morphology score across your scans.</p>
           </div>
           <Link href="/plan" className="text-xs text-primary hover:underline">Open plan →</Link>
@@ -233,7 +233,7 @@ export default function DashboardPage() {
       <Card className="mt-5">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="font-display text-lg font-semibold">Today&apos;s missions</h2>
+            <h2 className="font-display text-lg">Today&apos;s missions</h2>
             <p className="text-sm text-muted">Small, consistent wins. +15 XP for logging your check-in.</p>
           </div>
           <Droplets className="h-5 w-5 text-accent" />

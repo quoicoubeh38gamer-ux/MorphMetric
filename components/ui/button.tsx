@@ -6,22 +6,21 @@ type Variant = "primary" | "secondary" | "ghost" | "outline";
 type Size = "sm" | "md" | "lg";
 
 const base =
-  "sheen group relative inline-flex items-center justify-center gap-2 rounded-full font-semibold transition-all duration-300 focus-ring disabled:pointer-events-none disabled:opacity-50 hover:-translate-y-0.5 active:scale-[0.98]";
+  "inline-flex select-none items-center justify-center gap-2 rounded-full font-medium tracking-tight transition-[background-color,border-color,color,box-shadow,transform] duration-200 focus-ring disabled:pointer-events-none disabled:opacity-50 active:scale-[0.985]";
 
 const variants: Record<Variant, string> = {
-  primary:
-    "bg-divine text-primary-foreground shadow-glow hover:shadow-halo",
+  // Ink in light, off-white in dark. The only high-contrast element on screen.
+  primary: "bg-primary text-primary-foreground shadow-soft hover:opacity-90",
   secondary:
-    "bg-card/80 text-foreground border border-border backdrop-blur hover:border-halo-gold/50 hover:text-primary hover:shadow-glow",
-  outline:
-    "border border-halo-gold/40 text-foreground hover:border-halo-gold hover:text-primary hover:shadow-glow",
-  ghost: "text-muted hover:text-primary hover:bg-halo-gold/10",
+    "border border-border bg-surface text-foreground shadow-soft hover:border-foreground/20 hover:bg-card",
+  outline: "border border-border text-foreground hover:border-foreground/25 hover:bg-surface",
+  ghost: "text-muted hover:bg-surface hover:text-foreground",
 };
 
 const sizes: Record<Size, string> = {
-  sm: "h-9 px-4 text-sm",
-  md: "h-11 px-5 text-sm",
-  lg: "h-12 px-7 text-base",
+  sm: "h-8 px-3.5 text-[0.8125rem]",
+  md: "h-10 px-5 text-sm",
+  lg: "h-12 px-7 text-[0.9375rem]",
 };
 
 interface CommonProps {
