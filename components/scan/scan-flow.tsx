@@ -7,6 +7,7 @@ import { AlertTriangle, Camera, CheckCircle2, Lock, RefreshCw, ScanFace, Upload 
 import type { Profile, Sex } from "@/lib/ai/types";
 import { processImage, validateFile, type ProcessedImage } from "@/lib/image/client";
 import { detectFace, type FaceDetectResult } from "@/lib/ai/vision/landmarks";
+import { CameraCapture } from "./camera-capture";
 import { store } from "@/lib/store";
 import { CAPTURE_GUIDELINES, GOAL_OPTIONS, SEX_OPTIONS } from "@/lib/constants";
 import { cn } from "@/lib/utils/cn";
@@ -44,6 +45,7 @@ export function ScanFlow() {
   const [processed, setProcessed] = useState<ProcessedImage | null>(null);
   const [detecting, setDetecting] = useState(false);
   const [face, setFace] = useState<FaceDetectResult | null>(null);
+  const [cameraOpen, setCameraOpen] = useState(false);
   const [fileError, setFileError] = useState<string | null>(null);
   const [scanMsg, setScanMsg] = useState(0);
   const [error, setError] = useState<string | null>(null);
@@ -94,6 +96,7 @@ export function ScanFlow() {
     setProcessed(null);
     setFace(null);
     setDetecting(false);
+    setCameraOpen(false);
     setFileError(null);
     if (inputRef.current) inputRef.current.value = "";
   }
@@ -280,25 +283,41 @@ export function ScanFlow() {
               />
 
               {!processed ? (
-                <div className="mt-6">
-                  <button
-                    type="button"
-                    onClick={() => inputRef.current?.click()}
-                    disabled={processing}
-                    className="focus-ring flex w-full flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-border py-12 text-center transition-colors hover:border-primary/50 disabled:opacity-60"
-                  >
-                    <span className="grid h-12 w-12 place-items-center rounded-full bg-primary/10 text-primary">
-                      {processing ? <RefreshCw className="h-5 w-5 animate-spin" /> : <Upload className="h-5 w-5" />}
-                    </span>
-                    <span className="text-sm text-foreground">
-                      {processing ? "Checking image…" : "Take or upload a photo"}
-                    </span>
-                    <span className="text-xs text-muted">JPG, PNG or WebP · up to 8 MB</span>
-                  </button>
-                  <div className="mt-3 flex items-center justify-center gap-1.5 text-xs text-muted">
-                    <Camera className="h-3.5 w-3.5" /> On mobile you can capture directly from your camera.
+                cameraOpen ? (
+                  <CameraCapture
+                    onCapture={(f) => {
+                      setCameraOpen(false);
+                      onFile(f);
+                    }}
+                    onCancel={() => setCameraOpen(false)}
+                  />
+                ) : (
+                  <div className="mt-6 grid gap-3 sm:grid-cols-2">
+                    <button
+                      type="button"
+                      onClick={() => setCameraOpen(true)}
+                      className="focus-ring flex flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-border py-10 text-center transition-colors hover:border-primary/50"
+                    >
+                      <span className="grid h-12 w-12 place-items-center rounded-full bg-primary/10 text-primary">
+                        <Camera className="h-5 w-5" />
+                      </span>
+                      <span className="text-sm text-foreground">Take a photo</span>
+                      <span className="text-xs text-muted">Use your camera</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => inputRef.current?.click()}
+                      disabled={processing}
+                      className="focus-ring flex flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-border py-10 text-center transition-colors hover:border-primary/50 disabled:opacity-60"
+                    >
+                      <span className="grid h-12 w-12 place-items-center rounded-full bg-primary/10 text-primary">
+                        {processing ? <RefreshCw className="h-5 w-5 animate-spin" /> : <Upload className="h-5 w-5" />}
+                      </span>
+                      <span className="text-sm text-foreground">{processing ? "Checking image…" : "Upload a photo"}</span>
+                      <span className="text-xs text-muted">JPG, PNG or WebP · up to 8 MB</span>
+                    </button>
                   </div>
-                </div>
+                )
               ) : (
                 <div className="mt-6">
                   <div className="flex flex-col gap-4 sm:flex-row">

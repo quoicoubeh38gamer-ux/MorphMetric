@@ -197,6 +197,38 @@ export default function ResultsPage() {
         </section>
       ) : null}
 
+      {/* Harmony vs balanced */}
+      {report.comparisons.length > 0 ? (
+        <section className="mt-12">
+          <div className="flex items-center gap-2">
+            <h2 className="font-display text-xl font-semibold">Harmony</h2>
+            <Badge tone="primary">{report.harmonyScore}/100</Badge>
+          </div>
+          <p className="mt-1 text-sm text-muted">
+            How close each measured ratio sits to a neutral, balanced reference — a guide, not a beauty standard.
+          </p>
+          <div className="mt-5 grid gap-3 sm:grid-cols-2">
+            {report.comparisons.map((c) => (
+              <div key={c.key} className="card-base p-4">
+                <div className="flex items-center justify-between gap-2 text-sm">
+                  <span className="font-medium">{c.label}</span>
+                  <span className="text-xs text-muted">
+                    you <span className="font-mono text-foreground">{c.you}</span> · target{" "}
+                    <span className="font-mono">{c.ideal}</span>
+                  </span>
+                </div>
+                <div className="mt-2.5 h-2 w-full overflow-hidden rounded-full bg-border/60">
+                  <div
+                    className="h-full rounded-full bg-gradient-to-r from-primary to-accent transition-[width] duration-700"
+                    style={{ width: `${Math.round(c.proximity * 100)}%` }}
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      ) : null}
+
       {/* Strengths & focus */}
       <section className="mt-12 grid gap-5 md:grid-cols-2">
         <Card>

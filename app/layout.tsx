@@ -4,6 +4,7 @@ import "./globals.css";
 import { Navbar } from "@/components/site/navbar";
 import { Footer } from "@/components/site/footer";
 import { AnimatedBackground } from "@/components/ui/animated-background";
+import { siteUrl } from "@/lib/site-url";
 
 const sans = Inter({ subsets: ["latin"], variable: "--font-sans", display: "swap" });
 const display = Space_Grotesk({
@@ -14,15 +15,42 @@ const display = Space_Grotesk({
 });
 const mono = JetBrains_Mono({ subsets: ["latin"], variable: "--font-mono", display: "swap" });
 
+const SITE = siteUrl();
+const DESCRIPTION =
+  "AI-powered visual analysis and evidence-based guidance to help you understand your features, habits and growth-related factors — then focus on what you can control.";
+
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE),
   title: {
     default: "MorphMetric — Understand your morphology. Build your potential.",
     template: "%s · MorphMetric",
   },
-  description:
-    "AI-powered visual analysis and evidence-based guidance to help you understand your features, habits and growth-related factors.",
+  description: DESCRIPTION,
   applicationName: "MorphMetric",
+  keywords: [
+    "morphology analysis",
+    "facial analysis",
+    "face scan",
+    "self improvement",
+    "grooming",
+    "skincare",
+    "posture",
+    "evidence-based",
+  ],
   robots: { index: true, follow: true },
+  alternates: { canonical: "/" },
+  openGraph: {
+    type: "website",
+    siteName: "MorphMetric",
+    url: SITE,
+    title: "MorphMetric — Understand your morphology. Build your potential.",
+    description: DESCRIPTION,
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "MorphMetric",
+    description: DESCRIPTION,
+  },
 };
 
 // Set the theme before paint to avoid a flash. Defaults to dark.

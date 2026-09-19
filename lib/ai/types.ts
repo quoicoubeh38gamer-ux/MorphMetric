@@ -86,6 +86,15 @@ export interface FaceMetric {
   hint?: string;
 }
 
+/** A "you vs balanced" comparison row for the harmony section. */
+export interface Comparison {
+  key: string;
+  label: string;
+  you: string;
+  ideal: string;
+  proximity: number; // 0..1 (1 = on the balanced target)
+}
+
 /** Raw numeric metrics the client sends from the landmark geometry. */
 export interface FaceMetricsRaw {
   thirdsUpper: number;
@@ -112,6 +121,8 @@ export interface FaceReport {
   quality: QualitySummary;
   features: FeatureScore[];
   metrics: FaceMetric[]; // detailed measurements (empty on heuristic fallback)
+  harmonyScore: number; // 0..100 closeness to balanced reference (0 when no metrics)
+  comparisons: Comparison[]; // you vs balanced target (empty on heuristic fallback)
   strengths: RankedFeature[]; // top 3
   focusAreas: RankedFeature[]; // bottom 3 (controllable-leaning)
   roadmap: Recommendation[]; // max 3

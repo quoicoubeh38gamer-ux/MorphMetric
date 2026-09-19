@@ -1,4 +1,5 @@
 import type {
+  Comparison,
   FaceMetric,
   FaceMetricsRaw,
   FaceReport,
@@ -28,6 +29,37 @@ const CONTROLLABLE_CEILING: Record<FeatureKey, number> = {
   nose: 15,
   jaw: 14.5,
 };
+
+const clamp01 = (n: number) => Math.min(1, Math.max(0, n));
+const near = (v: number, ideal: number, tol: number) => clamp01(1 - Math.abs(v - ideal) / tol);
+const band = (v: number, lo: number, hi: number, tol: number) =>
+  v >= lo && v <= hi ? 1 : clamp01(1 - (v < lo ? lo - v : v - hi) / tol);
+
+/**
+ * "You vs balanced" comparison rows + an overall harmony (0..100). "Balanced"
+ * is a neutral reference, explicitly not a claim of objective beauty.
+ */
+function buildComparisons(m?: FaceMetricsRaw): { comparisons: Comparison[]; harmony: number } {
+  if (!m) return { comparisons: [], harmony: 0 };
+  const pc = (n: number) => `${Math.round(n * 100)}%`;
+  const thirdsDev = Math.max(
+    Math.abs(m.thirdsUpper - 1 / 3),
+    Math.abs(m.thirdsMid - 1 / 3),
+    Math.abs(m.thirdsLower - 1 / 3),
+  );
+  const rows: Comparison[] = [
+    { key: "thirds", label: "Facial thirds", you: `${pc(m.thirdsUpper)}/${pc(m.thirdsMid)}/${pc(m.thirdsLower)}`, ideal: "33/33/33", proximity: clamp01(1 - thirdsDev / 0.12) },
+    { key: "fwhr", label: "Width-to-height", you: m.fwhr.toFixed(2), ideal: "1.8–2.0", proximity: band(m.fwhr, 1.8, 2.0, 0.5) },
+    { key: "canthal", label: "Canthal tilt", you: `${m.canthalTiltDeg > 0 ? "+" : ""}${m.canthalTiltDeg.toFixed(1)}°`, ideal: "+3–8°", proximity: band(m.canthalTiltDeg, 3, 8, 6) },
+    { key: "interocular", label: "Eye spacing", you: `${m.interocularRatio.toFixed(2)}×`, ideal: "~1.0×", proximity: near(m.interocularRatio, 1.0, 0.35) },
+    { key: "jaw", label: "Jaw width", you: pc(m.jawWidthRatio), ideal: "~75%", proximity: near(m.jawWidthRatio, 0.75, 0.18) },
+    { key: "nose", label: "Nose width", you: pc(m.noseWidthRatio), ideal: "~25%", proximity: near(m.noseWidthRatio, 0.25, 0.12) },
+    { key: "mouth", label: "Mouth width", you: pc(m.mouthWidthRatio), ideal: "~46%", proximity: near(m.mouthWidthRatio, 0.46, 0.14) },
+    { key: "symmetry", label: "Symmetry", you: `${m.symmetryDevPct.toFixed(1)}%`, ideal: "<3%", proximity: clamp01(1 - m.symmetryDevPct / 6) },
+  ];
+  const harmony = Math.round((rows.reduce((s, r) => s + r.proximity, 0) / rows.length) * 100);
+  return { comparisons: rows, harmony };
+}
 
 function formatMetrics(m?: FaceMetricsRaw): FaceMetric[] {
   if (!m) return [];
@@ -65,6 +97,8 @@ export function buildFaceReport(
   );
   const potentialScore = Math.round(clamp(morphScore + Math.min(4.5, headroom * 0.22), morphScore, 20) * 10) / 10;
 
+  const { comparisons, harmony } = buildComparisons(metricsRaw);
+
   const byScoreDesc = [...features].sort((a, b) => b.score - a.score);
   const toRanked = (list: typeof features): RankedFeature[] =>
     list.map((f) => ({ key: f.key, label: f.label, score: f.score }));
@@ -82,6 +116,8 @@ export function buildFaceReport(
     quality,
     features,
     metrics: formatMetrics(metricsRaw),
+    harmonyScore: harmony,
+    comparisons,
     strengths: toRanked(byScoreDesc.slice(0, 3)),
     focusAreas: toRanked([...byScoreDesc].reverse().slice(0, 3)),
     roadmap: buildRoadmap(features, profile),

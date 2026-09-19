@@ -22,6 +22,19 @@ import { HeroVisual } from "@/components/landing/hero-visual";
 import { Aurora } from "@/components/ui/aurora";
 import { FEATURE_KEYS } from "@/lib/ai/types";
 import { FEATURE_META } from "@/lib/ai/features";
+import { siteUrl } from "@/lib/site-url";
+
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  name: "MorphMetric",
+  url: siteUrl(),
+  applicationCategory: "HealthApplication",
+  operatingSystem: "Web",
+  description:
+    "AI-powered visual analysis and evidence-based guidance to help you understand your features, habits and growth-related factors.",
+  offers: { "@type": "Offer", price: "0", priceCurrency: "EUR" },
+};
 
 const TRUST = [
   { icon: BadgeCheck, label: "Confidence-scored" },
@@ -41,6 +54,7 @@ const FEATURE_ICON = [Ruler, ScanFace, Eye, Sparkles, ScanFace, Sparkles, Ruler,
 export default function LandingPage() {
   return (
     <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       {/* Hero */}
       <Section className="relative overflow-hidden pt-14 sm:pt-20">
         <Aurora />
