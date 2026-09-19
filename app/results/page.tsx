@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { Info, ScanFace, ShieldCheck, Sparkles, TriangleAlert } from "lucide-react";
+import { Info, ScanFace, ShieldCheck, Sparkles, TrendingUp, TriangleAlert } from "lucide-react";
 import type { Controllability, FaceReport } from "@/lib/ai/types";
 import { store } from "@/lib/store";
 import { score1 } from "@/lib/utils/format";
@@ -90,6 +90,19 @@ export default function ResultsPage() {
               attractiveness or your worth. Treat it as a baseline to improve from.
             </p>
 
+            {report.potentialScore > report.morphScore ? (
+              <div className="mt-4 flex items-start gap-3 rounded-xl border border-primary/30 bg-primary/5 p-3">
+                <TrendingUp className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
+                <div className="text-sm">
+                  <span className="text-muted">Presentation potential </span>
+                  <span className="font-mono font-semibold text-primary">
+                    <CountUp value={report.potentialScore} decimals={1} /> / 20
+                  </span>
+                  <p className="mt-0.5 text-xs text-muted">{report.potentialNote}</p>
+                </div>
+              </div>
+            ) : null}
+
             {report.ageAware ? (
               <div className="mt-4 flex items-start gap-2 rounded-xl border border-accent/30 bg-accent/10 p-3 text-sm">
                 <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-accent" />
@@ -152,6 +165,25 @@ export default function ResultsPage() {
           </div>
         </div>
       </section>
+
+      {/* Detailed measurements */}
+      {report.metrics.length > 0 ? (
+        <section className="mt-12">
+          <h2 className="font-display text-xl font-semibold">Detailed measurements</h2>
+          <p className="mt-1 text-sm text-muted">
+            Real ratios from your 468-point mesh. Reference values are guides, not targets.
+          </p>
+          <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            {report.metrics.map((m) => (
+              <div key={m.key} className="card-base p-4">
+                <div className="text-xs text-muted">{m.label}</div>
+                <div className="mt-1 font-mono text-lg tabular">{m.value}</div>
+                {m.hint ? <div className="mt-1 text-[11px] leading-snug text-muted">{m.hint}</div> : null}
+              </div>
+            ))}
+          </div>
+        </section>
+      ) : null}
 
       {/* Strengths & focus */}
       <section className="mt-12 grid gap-5 md:grid-cols-2">

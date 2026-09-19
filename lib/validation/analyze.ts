@@ -38,8 +38,21 @@ export const signalsSchema = z.object({
   skin: unit,
 });
 
+export const metricsSchema = z.object({
+  thirdsUpper: z.number().min(0).max(1),
+  thirdsMid: z.number().min(0).max(1),
+  thirdsLower: z.number().min(0).max(1),
+  fwhr: z.number().min(0).max(5),
+  interocularRatio: z.number().min(0).max(5),
+  canthalTiltDeg: z.number().min(-45).max(45),
+  jawWidthRatio: z.number().min(0).max(3),
+  noseWidthRatio: z.number().min(0).max(2),
+  mouthWidthRatio: z.number().min(0).max(2),
+  symmetryDevPct: z.number().min(0).max(100),
+});
+
 export const visionSchema = z.discriminatedUnion("mode", [
-  z.object({ mode: z.literal("landmarks"), signals: signalsSchema }),
+  z.object({ mode: z.literal("landmarks"), signals: signalsSchema, metrics: metricsSchema.optional() }),
   z.object({ mode: z.literal("fingerprint"), fingerprint: z.array(unit).min(1).max(64) }),
 ]);
 

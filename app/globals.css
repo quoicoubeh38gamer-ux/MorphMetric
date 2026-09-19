@@ -104,12 +104,25 @@
     background-image: linear-gradient(
       100deg,
       hsl(var(--foreground)) 0%,
-      hsl(var(--primary)) 60%,
-      hsl(var(--accent)) 100%
+      hsl(var(--primary)) 45%,
+      hsl(var(--accent)) 70%,
+      hsl(var(--primary)) 100%
     );
+    background-size: 220% auto;
+    animation: gradient-pan 7s ease infinite;
   }
   .focus-ring {
     @apply outline-none ring-offset-2 ring-offset-background focus-visible:ring-2 focus-visible:ring-ring;
+  }
+}
+
+@keyframes gradient-pan {
+  0%,
+  100% {
+    background-position: 0% center;
+  }
+  50% {
+    background-position: 100% center;
   }
 }
 

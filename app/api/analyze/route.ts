@@ -52,7 +52,12 @@ export async function POST(req: Request): Promise<Response> {
       ? visionFromLandmarkSignals(vision.signals, quality)
       : getVisionProvider().analyze({ fingerprint: vision.fingerprint, quality });
 
-  const report = buildFaceReport(profile, visionResult, quality);
+  const report = buildFaceReport(
+    profile,
+    visionResult,
+    quality,
+    vision.mode === "landmarks" ? vision.metrics : undefined,
+  );
 
   return NextResponse.json({ report });
 }

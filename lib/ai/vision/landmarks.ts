@@ -9,7 +9,7 @@
 // neutral reference), never a claim of objective beauty. The server attaches
 // confidence levels to every feature.
 
-import { FEATURE_KEYS, type FeatureKey } from "../types";
+import { FEATURE_KEYS, type FaceMetricsRaw, type FeatureKey } from "../types";
 
 // Load the model lazily from the CDN, matching the installed npm version so the
 // WASM runtime and the JS API stay compatible.
@@ -23,6 +23,7 @@ type Pt = { x: number; y: number; z?: number };
 export interface FaceDetectResult {
   detected: boolean;
   signals?: Record<FeatureKey, number>;
+  metrics?: FaceMetricsRaw;
   meshPreviewDataUrl?: string;
   pointCount?: number;
   error?: string;
@@ -184,6 +185,50 @@ function computeSignals(lm: Pt[], skinEvenness: number): Record<FeatureKey, numb
   };
 }
 
+const clampN = (n: number, a: number, b: number) => Math.min(b, Math.max(a, n));
+
+/** Real geometric sub-metrics from the mesh (formatted client-side numbers). */
+function computeMetrics(lm: Pt[]): FaceMetricsRaw {
+  const P = (i: number): Pt => lm[i] ?? { x: 0.5, y: 0.5 };
+  const faceWidth = Math.max(1e-4, dist(P(IDX.faceR), P(IDX.faceL)));
+  const faceHeight = Math.max(1e-4, dist(P(IDX.top), P(IDX.chin)));
+  const browY = (P(IDX.browR).y + P(IDX.browL).y) / 2;
+  const t1 = browY - P(IDX.top).y;
+  const t2 = P(IDX.noseBase).y - browY;
+  const t3 = P(IDX.chin).y - P(IDX.noseBase).y;
+  const tSum = Math.max(1e-4, t1 + t2 + t3);
+  const interocular = dist(P(IDX.eyeRIn), P(IDX.eyeLIn));
+  const eyeWidth = (dist(P(IDX.eyeROut), P(IDX.eyeRIn)) + dist(P(IDX.eyeLOut), P(IDX.eyeLIn))) / 2 || 1e-4;
+  const upperFaceH = Math.max(1e-4, P(IDX.lipTopOuter).y - browY);
+
+  // canthal tilt (deg), positive = outer corner higher than inner
+  const tiltR = Math.atan2(P(IDX.eyeRIn).y - P(IDX.eyeROut).y, Math.max(1e-4, Math.abs(P(IDX.eyeROut).x - P(IDX.eyeRIn).x)));
+  const tiltL = Math.atan2(P(IDX.eyeLIn).y - P(IDX.eyeLOut).y, Math.max(1e-4, Math.abs(P(IDX.eyeLOut).x - P(IDX.eyeLIn).x)));
+  const canthalTiltDeg = ((tiltR + tiltL) / 2) * (180 / Math.PI);
+
+  const midX = [IDX.top, IDX.noseBridge, IDX.noseBase, IDX.chin].reduce((s, i) => s + P(i).x, 0) / 4;
+  let symDev = 0;
+  for (const [r, l] of SYM_PAIRS) {
+    symDev += Math.abs((P(r).x + P(l).x) / 2 - midX) / faceWidth + Math.abs(P(r).y - P(l).y) / faceHeight;
+  }
+  symDev /= SYM_PAIRS.length;
+
+  const r3 = (n: number) => Math.round(n * 1000) / 1000;
+  const r1 = (n: number) => Math.round(n * 10) / 10;
+  return {
+    thirdsUpper: r3(clampN(t1 / tSum, 0, 1)),
+    thirdsMid: r3(clampN(t2 / tSum, 0, 1)),
+    thirdsLower: r3(clampN(t3 / tSum, 0, 1)),
+    fwhr: r3(clampN(faceWidth / upperFaceH, 0, 5)),
+    interocularRatio: r3(clampN(interocular / eyeWidth, 0, 5)),
+    canthalTiltDeg: r1(clampN(canthalTiltDeg, -45, 45)),
+    jawWidthRatio: r3(clampN(dist(P(IDX.jawR), P(IDX.jawL)) / faceWidth, 0, 3)),
+    noseWidthRatio: r3(clampN(dist(P(IDX.alaR), P(IDX.alaL)) / faceWidth, 0, 2)),
+    mouthWidthRatio: r3(clampN(dist(P(IDX.mouthR), P(IDX.mouthL)) / faceWidth, 0, 2)),
+    symmetryDevPct: r1(clampN(symDev * 100, 0, 100)),
+  };
+}
+
 /** Sample skin evenness near both cheeks (lower local variance = smoother). */
 function skinEvennessFrom(ctx: CanvasRenderingContext2D, lm: Pt[], w: number, h: number): number {
   const centers = [lm[IDX.cheekR], lm[IDX.cheekL]].filter(Boolean) as Pt[];
@@ -276,6 +321,7 @@ export async function detectFace(file: File): Promise<FaceDetectResult> {
     return {
       detected: true,
       signals,
+      metrics: computeMetrics(lm),
       meshPreviewDataUrl: drawMesh(img, lm),
       pointCount: lm.length,
     };

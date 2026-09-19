@@ -120,7 +120,7 @@ export function ScanFlow() {
             quality: processed.quality,
             vision:
               face?.detected && face.signals
-                ? { mode: "landmarks", signals: face.signals }
+                ? { mode: "landmarks", signals: face.signals, metrics: face.metrics }
                 : { mode: "fingerprint", fingerprint: processed.fingerprint },
           }),
         }),

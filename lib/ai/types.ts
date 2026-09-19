@@ -78,15 +78,40 @@ export interface RankedFeature {
   score: number;
 }
 
+/** Real geometric sub-metrics from the 468-point mesh (formatted for display). */
+export interface FaceMetric {
+  key: string;
+  label: string;
+  value: string;
+  hint?: string;
+}
+
+/** Raw numeric metrics the client sends from the landmark geometry. */
+export interface FaceMetricsRaw {
+  thirdsUpper: number;
+  thirdsMid: number;
+  thirdsLower: number;
+  fwhr: number;
+  interocularRatio: number;
+  canthalTiltDeg: number;
+  jawWidthRatio: number;
+  noseWidthRatio: number;
+  mouthWidthRatio: number;
+  symmetryDevPct: number;
+}
+
 export interface FaceReport {
   id: string;
   provider: string;
   createdAt: string; // ISO
   morphScore: number; // 0..20
+  potentialScore: number; // reachable via controllable factors only
+  potentialNote: string;
   confidenceOverall: Confidence;
   ageAware: boolean; // true when age < 18 → de-emphasize the score
   quality: QualitySummary;
   features: FeatureScore[];
+  metrics: FaceMetric[]; // detailed measurements (empty on heuristic fallback)
   strengths: RankedFeature[]; // top 3
   focusAreas: RankedFeature[]; // bottom 3 (controllable-leaning)
   roadmap: Recommendation[]; // max 3
