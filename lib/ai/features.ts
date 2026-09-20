@@ -218,12 +218,12 @@ export const FEATURE_META: Record<FeatureKey, FeatureMeta> = {
 export function summaryFor(key: FeatureKey, score: number): string {
   const noun = FEATURE_META[key].label.toLowerCase();
   if (score >= 15.5)
-    return `In this image, your ${noun} measures within the reference range across the characteristics we can assess.`;
+    return `In this image, measurements for your ${noun} sit within the reference range across the characteristics we can assess.`;
   if (score >= 12.5)
-    return `In this image, your ${noun} measures close to the reference range.`;
+    return `In this image, measurements for your ${noun} sit close to the reference range.`;
   if (score >= 9)
-    return `In this image, one or more ${noun} measurements sit outside the reference range — a useful place to focus what you can influence.`;
-  return `In this image, several ${noun} measurements sit well outside the reference range. Note that reference ranges are a coordinate system, not a target everyone should meet.`;
+    return `In this image, one or more measurements for your ${noun} sit outside the reference range — a useful place to focus what you can influence.`;
+  return `In this image, several measurements for your ${noun} sit well outside the reference range. Reference ranges are a coordinate system, not a target everyone should meet.`;
 }
 
 // --- Precise per-region sub-scores -----------------------------------------

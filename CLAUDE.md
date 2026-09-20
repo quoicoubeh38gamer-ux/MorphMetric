@@ -237,12 +237,49 @@ file. Never rewrite a working feature arbitrarily.
   does not exist yet. CSP still needs `'unsafe-inline'` for Next's hydration
   bootstrap until a nonce middleware lands.
 
+### Dashboard, onboarding, Coach, Style Lab, history & report (current)
+- **Dashboard shell** (`app/dashboard/layout.tsx` + `components/dashboard/sidebar.tsx`):
+  seven sections — Overview, Measurements, Insights, History, Progress, Style,
+  Settings. Sticky rail from `lg`, a horizontally scrollable pill row below it
+  (not a hamburger: seven flat destinations beat a drawer you must open first).
+  The nav needs `min-w-0` — as a grid item it defaults to `min-width:auto` and
+  otherwise stretches the whole page on mobile.
+- **Onboarding**: Welcome → Consent → Profile → Capture → Analysis. Consent is a
+  real gate with an explicit checkbox, stored with a version
+  (`CONSENT_VERSION`) so it can be re-asked when what we process changes, and
+  revocable from Settings.
+- **History + comparison** (`/dashboard/history`): full reports are now kept
+  (capped at 12) alongside the lightweight snapshots. Pick any two to get
+  overall/ceiling/harmony deltas and a per-region before→after table, ordered
+  oldest → newest so a positive delta always means "moved up".
+- **Coach** (`lib/ai/coach.ts`, `/dashboard/insights`): explains the report from
+  its own numbers. Deliberately deterministic — no model call, no external
+  request — so an explanation can never drift from the data or invent a claim.
+  Rendered as a chat with suggested questions.
+- **Style Lab** (`lib/style-lab.ts`, `/dashboard/style`): ideas derived from the
+  user's measured ratios (fWHR, thirds, jaw width, eye spacing, symmetry) plus
+  universal lighting/photography ones. No virtual try-on: a fake preview would
+  be the least honest thing in the product. `metricsRaw` is now carried on the
+  report so features can reason on numbers.
+- **Report / PDF** (`/report`): a real printable document + `@media print` rules;
+  the browser's own "Save as PDF" gives selectable text and keeps generation on
+  the device. Site chrome is `print:hidden`.
+- **Settings** (`/dashboard/settings`): consent status + withdraw, a
+  save-history switch (off = analyses stay ephemeral), delete-analyses and
+  delete-everything, both two-step.
+- Copy fix: summaries are phrased "measurements for your X" so singular and
+  plural region labels both read correctly.
+
+
 ### Still to do (next batch)
-- Style Lab, AI Coach, PDF export, side-by-side analysis comparison.
-- Dashboard sidebar shell (Overview / Measurements / Insights / History /
-  Progress / Style / Settings).
-- Onboarding flow as discrete steps with an explicit consent gate.
-- Move persistence server-side (with ownership checks) once accounts are live.
+- Stripe checkout + webhook (blocked on the owner's banking details). Gating is
+  declarative in `lib/subscription.ts`; `BILLING_LIVE=false` unlocks every tier
+  until checkout exists, so nothing dangles that cannot be bought.
+- Move persistence server-side with ownership checks once accounts are live.
+  Until then there is no per-analysis object to enumerate, so no IDOR surface.
+- CSP still needs `'unsafe-inline'` for Next's hydration bootstrap until a
+  nonce middleware lands.
+- Landmark accuracy tuning validated against real photos on the live site.
 
 ### To do
 - Connect Postgres (e.g. Vercel Storage) + set AUTH_SECRET/APP_URL → test the

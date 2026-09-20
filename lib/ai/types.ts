@@ -135,6 +135,7 @@ export interface FaceReport {
   quality: QualitySummary;
   features: FeatureScore[];
   metrics: FaceMetric[]; // detailed measurements (empty on heuristic fallback)
+  metricsRaw?: FaceMetricsRaw; // the underlying numbers, when landmarks were used
   harmonyScore: number; // 0..100 closeness to balanced reference (0 when no metrics)
   comparisons: Comparison[]; // you vs balanced target (empty on heuristic fallback)
   strengths: RankedFeature[]; // top 3

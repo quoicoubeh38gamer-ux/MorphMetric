@@ -123,3 +123,16 @@ export function can(plan: Plan, feature: keyof PlanFeatures): boolean {
 export function requiredPlan(feature: keyof PlanFeatures): Plan {
   return PLAN_ORDER.find((p) => PLAN_FEATURES[p][feature]) ?? "premium";
 }
+
+/**
+ * Billing is not live yet. The landing page says so, and until Stripe is wired
+ * every tier is unlocked rather than dangling features nobody can buy. Flip
+ * this to `true` the day checkout ships and `currentPlan()` starts honouring
+ * the stored plan instead.
+ */
+export const BILLING_LIVE = false;
+
+export function currentPlan(stored?: Plan | null): Plan {
+  if (!BILLING_LIVE) return "premium";
+  return stored ?? "free";
+}

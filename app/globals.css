@@ -240,3 +240,30 @@
       0 0 40px -12px hsl(var(--accent) / 0.4);
   }
 }
+
+/* ---------------------------------------------------------------------------
+   Print — the report route is a real document, so give it document rules.
+--------------------------------------------------------------------------- */
+@media print {
+  @page {
+    margin: 16mm;
+  }
+  html,
+  body {
+    background: #fff !important;
+    color: #000 !important;
+  }
+  body {
+    background-image: none !important;
+  }
+  /* Keep a section and its heading on the same sheet. */
+  .report-block {
+    break-inside: avoid;
+  }
+  .report-sheet {
+    box-shadow: none !important;
+  }
+  a[href]::after {
+    content: "";
+  }
+}

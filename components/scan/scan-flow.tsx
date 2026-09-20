@@ -1,9 +1,9 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
-import { AlertTriangle, Camera, CheckCircle2, Lock, RefreshCw, ScanFace, Upload } from "lucide-react";
+import { AlertTriangle, Camera, CheckCircle2, EyeOff, Lock, RefreshCw, ScanFace, Server, Trash2, Upload } from "lucide-react";
 import type { Profile, Sex } from "@/lib/ai/types";
 import { processImage, validateFile, type ProcessedImage } from "@/lib/image/client";
 import { detectFace, type FaceDetectResult } from "@/lib/ai/vision/landmarks";
@@ -14,7 +14,7 @@ import { cn } from "@/lib/utils/cn";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 
-type Step = "profile" | "capture" | "scanning";
+type Step = "welcome" | "consent" | "profile" | "capture" | "scanning";
 
 const SCAN_MESSAGES = [
   "Checking image quality…",
@@ -31,7 +31,13 @@ function toNum(v: string): number | null {
 
 export function ScanFlow() {
   const router = useRouter();
-  const [step, setStep] = useState<Step>("profile");
+  const [step, setStep] = useState<Step>("welcome");
+  const [consentChecked, setConsentChecked] = useState(false);
+
+  // Consent already on file for this version? Skip straight to the profile.
+  useEffect(() => {
+    if (store.hasValidConsent()) setStep("profile");
+  }, []);
 
   // profile
   const [age, setAge] = useState("");
@@ -138,13 +144,17 @@ export function ScanFlow() {
       const data = (await res.json()) as { report: import("@/lib/ai/types").FaceReport };
       store.setProfile(profile);
       store.setReport(data.report);
-      store.addSnapshot({
-        id: data.report.id,
-        createdAt: data.report.createdAt,
-        morphScore: data.report.morphScore,
-        potentialScore: data.report.potentialScore,
-        provider: data.report.provider,
-      });
+      // History is opt-out: when it's off the analysis stays ephemeral.
+      if (store.getSettings().saveHistory) {
+        store.addReport(data.report);
+        store.addSnapshot({
+          id: data.report.id,
+          createdAt: data.report.createdAt,
+          morphScore: data.report.morphScore,
+          potentialScore: data.report.potentialScore,
+          provider: data.report.provider,
+        });
+      }
       store.addXp(50);
       router.push("/results");
     } catch (e) {
@@ -159,6 +169,99 @@ export function ScanFlow() {
       <StepDots step={step} />
 
       <AnimatePresence mode="wait">
+        {step === "welcome" && (
+          <motion.div key="welcome" {...fade}>
+            <div className="card-base p-6 sm:p-9">
+              <h2 className="font-display text-3xl tracking-tight">Before we start</h2>
+              <p className="mt-3 text-sm leading-relaxed text-muted">
+                This takes about a minute. Here is exactly what happens — and what
+                does not.
+              </p>
+
+              <ol className="mt-7 space-y-4">
+                {[
+                  { n: "01", t: "You tell us a couple of basics", d: "Age and optional context. Only what changes the analysis." },
+                  { n: "02", t: "You take or upload one photo", d: "We check lighting, sharpness and framing before anything else." },
+                  { n: "03", t: "The model runs on your device", d: "468 landmarks are extracted locally. The photo never leaves your browser." },
+                  { n: "04", t: "You get measurements, not verdicts", d: "Each value compared to a reference range, with its confidence level." },
+                ].map((s2) => (
+                  <li key={s2.n} className="flex gap-4">
+                    <span className="font-mono text-xs text-accent">{s2.n}</span>
+                    <span>
+                      <span className="block text-sm font-medium">{s2.t}</span>
+                      <span className="mt-1 block text-sm leading-relaxed text-muted">{s2.d}</span>
+                    </span>
+                  </li>
+                ))}
+              </ol>
+
+              <div className="mt-8 flex justify-end">
+                <Button onClick={() => setStep("consent")}>Continue</Button>
+              </div>
+            </div>
+          </motion.div>
+        )}
+
+        {step === "consent" && (
+          <motion.div key="consent" {...fade}>
+            <div className="card-base p-6 sm:p-9">
+              <h2 className="font-display text-3xl tracking-tight">Your consent</h2>
+              <p className="mt-3 text-sm leading-relaxed text-muted">
+                A face photo is sensitive data. Nothing is processed until you agree,
+                and you can withdraw this at any time in Settings.
+              </p>
+
+              <div className="mt-7 grid gap-px overflow-hidden rounded-2xl border border-border bg-border sm:grid-cols-3">
+                {[
+                  { icon: EyeOff, t: "No image upload", d: "Analysis runs in your browser. We never receive the photo." },
+                  { icon: Server, t: "Only numbers leave", d: "Bounded measurements are sent for scoring. Nothing identifying." },
+                  { icon: Trash2, t: "Delete any time", d: "One click wipes every analysis stored in this browser." },
+                ].map((c) => (
+                  <div key={c.t} className="bg-card p-5">
+                    <c.icon className="h-4 w-4 text-accent" strokeWidth={1.5} />
+                    <p className="mt-3 text-sm font-medium">{c.t}</p>
+                    <p className="mt-1.5 text-xs leading-relaxed text-muted">{c.d}</p>
+                  </div>
+                ))}
+              </div>
+
+              <label className="mt-7 flex cursor-pointer items-start gap-3 rounded-2xl border border-border bg-background/50 p-4">
+                <input
+                  type="checkbox"
+                  checked={consentChecked}
+                  onChange={(e) => setConsentChecked(e.target.checked)}
+                  className="mt-0.5 h-4 w-4 shrink-0 accent-[hsl(var(--accent))]"
+                />
+                <span className="text-sm leading-relaxed">
+                  I agree to MorphMetric processing a photo of my face on my device to produce
+                  descriptive measurements. I understand this is{" "}
+                  <span className="text-foreground">not a medical assessment</span> and not a
+                  judgement of appearance.
+                </span>
+              </label>
+
+              <div className="mt-8 flex items-center justify-between gap-4">
+                <button
+                  type="button"
+                  onClick={() => setStep("welcome")}
+                  className="text-sm text-muted hover:text-foreground"
+                >
+                  ← Back
+                </button>
+                <Button
+                  disabled={!consentChecked}
+                  onClick={() => {
+                    store.setConsent();
+                    setStep("profile");
+                  }}
+                >
+                  Agree &amp; continue
+                </Button>
+              </div>
+            </div>
+          </motion.div>
+        )}
+
         {step === "profile" && (
           <motion.div key="profile" {...fade}>
             <div className="card-base p-6 sm:p-8">
@@ -246,7 +349,14 @@ export function ScanFlow() {
                 </div>
               ) : null}
 
-              <div className="mt-8 flex justify-end">
+              <div className="mt-8 flex items-center justify-between gap-4">
+                <button
+                  type="button"
+                  onClick={() => setStep("consent")}
+                  className="text-sm text-muted hover:text-foreground"
+                >
+                  ← Back
+                </button>
                 <Button onClick={() => setStep("capture")}>Continue</Button>
               </div>
             </div>
@@ -449,24 +559,44 @@ function Field({ label, hint, children }: { label: string; hint?: string; childr
 }
 
 function StepDots({ step }: { step: Step }) {
-  const steps: Step[] = ["profile", "capture", "scanning"];
-  const labels: Record<Step, string> = { profile: "Profile", capture: "Scan", scanning: "Analysis" };
+  const steps: Step[] = ["welcome", "consent", "profile", "capture", "scanning"];
+  const labels: Record<Step, string> = {
+    welcome: "Start",
+    consent: "Consent",
+    profile: "Profile",
+    capture: "Capture",
+    scanning: "Analysis",
+  };
   const activeIndex = steps.indexOf(step);
   return (
-    <div className="mb-8 flex items-center justify-center gap-2">
-      {steps.map((s, i) => (
-        <div key={s} className="flex items-center gap-2">
-          <div
-            className={cn(
-              "flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs transition-colors",
-              i <= activeIndex ? "border-primary/50 bg-primary/10 text-foreground" : "border-border text-muted",
-            )}
-          >
-            <span className="font-mono">{i + 1}</span> {labels[s]}
-          </div>
-          {i < steps.length - 1 ? <span className="h-px w-4 bg-border" /> : null}
-        </div>
-      ))}
-    </div>
+    <ol className="mb-9 flex flex-wrap items-center justify-center gap-x-1.5 gap-y-2" aria-label="Progress">
+      {steps.map((s, i) => {
+        const done = i < activeIndex;
+        const current = i === activeIndex;
+        return (
+          <li key={s} className="flex items-center gap-1.5">
+            <span
+              aria-current={current ? "step" : undefined}
+              className={cn(
+                "flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[0.6875rem] transition-colors",
+                current
+                  ? "border-foreground/25 bg-card text-foreground"
+                  : done
+                    ? "border-border text-muted"
+                    : "border-border text-muted-foreground",
+              )}
+            >
+              {done ? (
+                <CheckCircle2 className="h-3 w-3 text-accent" />
+              ) : (
+                <span className="font-mono">{i + 1}</span>
+              )}
+              {labels[s]}
+            </span>
+            {i < steps.length - 1 ? <span className="h-px w-3 bg-border" aria-hidden /> : null}
+          </li>
+        );
+      })}
+    </ol>
   );
 }

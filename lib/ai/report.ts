@@ -116,6 +116,7 @@ export function buildFaceReport(
     quality,
     features,
     metrics: formatMetrics(metricsRaw),
+    metricsRaw: vision.landmarksDetected ? metricsRaw : undefined,
     harmonyScore: harmony,
     comparisons,
     strengths: toRanked(byScoreDesc.slice(0, 3)),

@@ -71,14 +71,14 @@ export default function DashboardPage() {
 
   if (!loaded) {
     return (
-      <div className="container py-24 text-center">
+      <div className="py-24 text-center">
         <div className="mx-auto h-10 w-10 animate-spin rounded-full border-2 border-border border-t-primary" />
       </div>
     );
   }
 
   return (
-    <div className="container max-w-5xl py-12">
+    <div>
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <p className="text-sm text-muted">{greeting()}.</p>

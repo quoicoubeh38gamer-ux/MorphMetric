@@ -15,7 +15,29 @@ const K = {
   xp: `${NS}xp`,
   history: `${NS}history`,
   plan: `${NS}plan`,
+  reports: `${NS}reports`,
+  consent: `${NS}consent`,
+  settings: `${NS}settings`,
+  styleTried: `${NS}styleTried`,
 } as const;
+
+/** How many full reports we keep. Bounded so localStorage never fills up. */
+const MAX_REPORTS = 12;
+
+/** The consent version. Bump when what we process materially changes. */
+export const CONSENT_VERSION = "2026-09-1";
+
+export interface ConsentRecord {
+  version: string;
+  acceptedAt: string; // ISO
+}
+
+export interface Settings {
+  /** When false, nothing is written to history — analyses stay ephemeral. */
+  saveHistory: boolean;
+}
+
+export const DEFAULT_SETTINGS: Settings = { saveHistory: true };
 
 function read<T>(key: string): T | null {
   if (typeof window === "undefined") return null;
@@ -78,6 +100,56 @@ export const store = {
     const list = read<ScanSnapshot[]>(K.history) ?? [];
     list.unshift(s);
     write(K.history, list.slice(0, 40));
+  },
+
+  // Full reports, newest first — powers History and side-by-side comparison.
+  getReports: () => read<FaceReport[]>(K.reports) ?? [],
+  addReport: (r: FaceReport) => {
+    const list = read<FaceReport[]>(K.reports) ?? [];
+    write(K.reports, [r, ...list.filter((x) => x.id !== r.id)].slice(0, MAX_REPORTS));
+  },
+  getReportById: (id: string) => (read<FaceReport[]>(K.reports) ?? []).find((r) => r.id === id) ?? null,
+  removeReport: (id: string) => {
+    const list = read<FaceReport[]>(K.reports) ?? [];
+    write(K.reports, list.filter((r) => r.id !== id));
+  },
+
+  // Explicit consent — nothing is processed before this exists.
+  getConsent: () => read<ConsentRecord>(K.consent),
+  setConsent: () => write(K.consent, { version: CONSENT_VERSION, acceptedAt: new Date().toISOString() }),
+  hasValidConsent: () => read<ConsentRecord>(K.consent)?.version === CONSENT_VERSION,
+  revokeConsent: () => {
+    if (typeof window === "undefined") return;
+    try {
+      window.localStorage.removeItem(K.consent);
+    } catch {
+      /* ignore */
+    }
+  },
+
+  getSettings: (): Settings => ({ ...DEFAULT_SETTINGS, ...(read<Partial<Settings>>(K.settings) ?? {}) }),
+  setSettings: (s: Partial<Settings>) => {
+    const current = { ...DEFAULT_SETTINGS, ...(read<Partial<Settings>>(K.settings) ?? {}) };
+    write(K.settings, { ...current, ...s });
+  },
+
+  // Style Lab: ideas the user marked as tried.
+  getStyleTried: () => read<Record<string, boolean>>(K.styleTried) ?? {},
+  toggleStyleTried: (id: string) => {
+    const t = read<Record<string, boolean>>(K.styleTried) ?? {};
+    t[id] = !t[id];
+    write(K.styleTried, t);
+    return t;
+  },
+
+  /** Wipe every stored analysis but keep consent + settings. */
+  clearAnalyses: () => {
+    if (typeof window === "undefined") return;
+    try {
+      for (const key of [K.report, K.reports, K.history]) window.localStorage.removeItem(key);
+    } catch {
+      /* ignore */
+    }
   },
 
   // Glow-up plan task completion (taskId -> done).
