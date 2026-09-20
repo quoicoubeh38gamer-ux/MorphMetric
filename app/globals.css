@@ -19,25 +19,29 @@
   --surface: 0 0% 100%;
   --card: 0 0% 100%;
   --border: 220 16% 91%;
-  --ring: 248 46% 62%;
+  --ring: 248 46% 56%;
   --foreground: 225 24% 9%;
   --muted: 225 10% 42%;
-  --muted-2: 225 8% 56%;
+  --muted-2: 225 10% 47%;
 
   /* Primary is ink, not colour — the Apple/Linear move. */
   --primary: 225 24% 10%;
   --primary-foreground: 0 0% 100%;
-  --accent: 248 46% 62%;
+  --accent: 248 46% 56%;
   --accent-foreground: 0 0% 100%;
+
+  /* Semantic colours double as chip text on a white card, so their
+     lightness is pinned to WCAG AA (4.5:1) there — `npm run a11y` re-checks
+     it. Tints below are background/data-viz only and carry no such floor. */
 
   /* Pearlescent tints. Background washes and data-viz only, never text. */
   --tint-silver: 220 18% 70%;
   --tint-blue: 214 58% 72%;
   --tint-lavender: 256 50% 74%;
 
-  --success: 162 34% 38%;
-  --warning: 35 60% 46%;
-  --danger: 352 50% 52%;
+  --success: 162 36% 34%;
+  --warning: 35 68% 34%;
+  --danger: 352 54% 48%;
 
   --shadow: 225 30% 38%;
 
@@ -52,7 +56,7 @@
   --ring: 250 68% 76%;
   --foreground: 220 24% 96%;
   --muted: 220 12% 70%;
-  --muted-2: 220 10% 50%;
+  --muted-2: 220 12% 54%;
 
   /* On black, the primary surface is light — buttons read as pressed metal. */
   --primary: 220 24% 96%;

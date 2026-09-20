@@ -210,12 +210,17 @@ function Slider({
           {value} {unit}
         </span>
       </div>
+      {/* The label is drawn above but never associated, so a screen reader
+          announced these four sliders as "slider, 7" with no idea which one.
+          aria-valuetext carries the unit, which the raw number does not. */}
       <input
         type="range"
         min={min}
         max={max}
         step={step}
         value={value}
+        aria-label={label}
+        aria-valuetext={`${value} ${unit}`}
         onChange={(e) => onChange(Number(e.target.value))}
         className="h-2 w-full cursor-pointer appearance-none rounded-full bg-border accent-primary"
       />

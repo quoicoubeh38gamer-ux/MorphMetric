@@ -234,8 +234,9 @@ file. Never rewrite a working feature arbitrarily.
   `Scan.deleteAt` for retention sweeps.
 - Noted as accepted/by-design: no analysis is stored server-side (localStorage
   only), so there is no per-analysis object to enumerate — the IDOR surface
-  does not exist yet. CSP still needs `'unsafe-inline'` for Next's hydration
-  bootstrap until a nonce middleware lands.
+  does not exist yet. (At the time of this audit CSP still carried
+  `'unsafe-inline'` for Next's hydration bootstrap — superseded by the nonce
+  middleware described below.)
 
 ### Dashboard, onboarding, Coach, Style Lab, history & report (current)
 - **Dashboard shell** (`app/dashboard/layout.tsx` + `components/dashboard/sidebar.tsx`):
@@ -456,14 +457,42 @@ so it can gate a release.
 
 `npm run icons` regenerates every raster from `MARK_PATH`.
 
+### Accessibility pass
+Audited both themes across 19 routes with `npm run a11y` (accessible names,
+alt text, labelled fields, heading order, duplicate ids, landmarks, and the
+computed contrast of every text node against its real painted background).
+~40 findings, now zero.
+
+- **Contrast.** Six semantic tokens failed WCAG AA as text on a white card:
+  `--muted-2` (3.44:1), `--warning` (2.99:1), `--accent` (3.64:1), `--success`,
+  `--danger`, and `--muted-2` again in dark (4.21:1). Lightness values were
+  solved for 4.5:1 with margin, not eyeballed. **The semantic colours double as
+  chip text on a white card, so their lightness now carries a contrast floor** —
+  a note sits next to them in `globals.css`. The pearlescent tints are
+  background/data-viz only and carry no such floor.
+- **Heading order.** The footer's column headings were `<h4>` under an `<h1>`
+  or `<h2>`, so *every page on the site* skipped two levels. Now `<h2>`.
+- **Unlabelled fields.** The three auth inputs relied on placeholders (which
+  disappear on focus and are not reliably announced) and the four growth
+  sliders had a visible label that was never associated — a screen reader read
+  them as "slider, 7" with no idea which. All carry `aria-label` now, and the
+  sliders add `aria-valuetext` so the unit is spoken.
+- Screen-reader-only text is clipped to 1px rather than hidden, so it still
+  reports as visible: the checker skips it rather than measuring it against
+  whatever sits behind the clip.
+
+### Cleanup
+- `clamp01`/`clampN` were defined three times; they now live in
+  `lib/utils/math.ts` with the reason they are finite-checked.
+- Removed two stale CLAUDE.md notes claiming CSP still needed
+  `'unsafe-inline'` — the nonce middleware replaced that.
+
 ### Still to do (next batch)
 - Stripe checkout + webhook (blocked on the owner's banking details). Gating is
   declarative in `lib/subscription.ts`; `BILLING_LIVE=false` unlocks every tier
   until checkout exists, so nothing dangles that cannot be bought.
 - Move persistence server-side with ownership checks once accounts are live.
   Until then there is no per-analysis object to enumerate, so no IDOR surface.
-- CSP still needs `'unsafe-inline'` for Next's hydration bootstrap until a
-  nonce middleware lands.
 - Landmark accuracy tuning validated against real photos on the live site.
 
 ### To do

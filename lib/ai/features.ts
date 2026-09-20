@@ -5,6 +5,7 @@ import type {
   FeatureKey,
   SubMetric,
 } from "./types";
+import { clamp01 } from "@/lib/utils/math";
 
 export interface FeatureMeta {
   label: string;
@@ -228,10 +229,6 @@ export function summaryFor(key: FeatureKey, score: number): string {
 
 // --- Precise per-region sub-scores -----------------------------------------
 
-// NaN-safe: Math.max(0, NaN) is NaN, so a plain clamp forwards a bad value
-// instead of stopping it. A single non-finite landmark would otherwise reach
-// the UI as "NaN" and serialise to null, failing the server's schema.
-const clamp01 = (n: number) => (Number.isFinite(n) ? Math.min(1, Math.max(0, n)) : 0);
 const near = (v: number, ideal: number, tol: number) => clamp01(1 - Math.abs(v - ideal) / tol);
 const band = (v: number, lo: number, hi: number, tol: number) =>
   v >= lo && v <= hi ? 1 : clamp01(1 - (v < lo ? lo - v : v - hi) / tol);

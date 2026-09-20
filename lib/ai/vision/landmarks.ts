@@ -10,6 +10,7 @@
 // confidence levels to every feature.
 
 import { FEATURE_KEYS, type FaceMetricsRaw, type FeatureKey } from "../types";
+import { clamp01, clampN } from "@/lib/utils/math";
 
 // Load the model lazily from the CDN, matching the installed npm version so the
 // WASM runtime and the JS API stay compatible.
@@ -69,10 +70,6 @@ function loadImage(file: File): Promise<HTMLImageElement> {
 }
 
 const dist = (a: Pt, b: Pt) => Math.hypot(a.x - b.x, a.y - b.y);
-// NaN-safe: Math.max(0, NaN) is NaN, so a plain clamp forwards a bad value
-// instead of stopping it. A single non-finite landmark would otherwise reach
-// the UI as "NaN" and serialise to null, failing the server's schema.
-const clamp01 = (n: number) => (Number.isFinite(n) ? Math.min(1, Math.max(0, n)) : 0);
 const round3 = (n: number) => Math.round(n * 1000) / 1000;
 
 /**
@@ -210,10 +207,6 @@ function computeSignals(lm: Pt[], skinEvenness: number): Record<FeatureKey, numb
   };
 }
 
-// Same NaN rule as clamp01, with an explicit fallback so each call site says
-// what a missing measurement should read as.
-const clampN = (n: number, a: number, b: number, fallback = a) =>
-  Number.isFinite(n) ? Math.min(b, Math.max(a, n)) : fallback;
 
 /** Real geometric sub-metrics from the mesh (formatted client-side numbers). */
 function computeMetrics(lm: Pt[]): FaceMetricsRaw {

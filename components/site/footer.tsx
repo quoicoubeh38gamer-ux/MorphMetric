@@ -14,7 +14,7 @@ export function Footer() {
         </div>
 
         <div>
-          <h4 className="text-sm font-semibold">Product</h4>
+          <h2 className="text-sm font-semibold">Product</h2>
           <ul className="mt-4 space-y-2.5 text-sm text-muted">
             <li><Link href="/scan" className="inline-flex min-h-9 items-center hover:text-foreground">Start a scan</Link></li>
             <li><Link href="/dashboard" className="inline-flex min-h-9 items-center hover:text-foreground">Dashboard</Link></li>
@@ -24,7 +24,7 @@ export function Footer() {
         </div>
 
         <div>
-          <h4 className="text-sm font-semibold">Learn</h4>
+          <h2 className="text-sm font-semibold">Learn</h2>
           <ul className="mt-4 space-y-2.5 text-sm text-muted">
             <li><Link href="/learn" className="inline-flex min-h-9 items-center hover:text-foreground">All guides</Link></li>
             <li><Link href="/learn/how-scoring-works" className="inline-flex min-h-9 items-center hover:text-foreground">How the score works</Link></li>
@@ -34,7 +34,7 @@ export function Footer() {
         </div>
 
         <div>
-          <h4 className="text-sm font-semibold">Trust</h4>
+          <h2 className="text-sm font-semibold">Trust</h2>
           <ul className="mt-4 space-y-2.5 text-sm text-muted">
             <li><Link href="/privacy" className="inline-flex min-h-9 items-center hover:text-foreground">Privacy &amp; data</Link></li>
             <li><Link href="/learn/privacy-by-design" className="inline-flex min-h-9 items-center hover:text-foreground">Where your data goes</Link></li>

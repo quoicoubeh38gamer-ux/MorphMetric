@@ -69,6 +69,7 @@ export function AuthForm({ mode }: { mode: "login" | "signup" }) {
             <Field icon={<User className="h-4 w-4" />}>
               <input
                 className={inputCls}
+                aria-label="Name (optional)"
                 placeholder="Name (optional)"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
@@ -82,6 +83,7 @@ export function AuthForm({ mode }: { mode: "login" | "signup" }) {
               type="email"
               required
               className={inputCls}
+              aria-label="Email address"
               placeholder="you@email.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -95,6 +97,7 @@ export function AuthForm({ mode }: { mode: "login" | "signup" }) {
               required
               minLength={8}
               className={inputCls}
+              aria-label={isSignup ? "Password, at least 8 characters" : "Password"}
               placeholder={isSignup ? "Password (min 8 characters)" : "Password"}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
