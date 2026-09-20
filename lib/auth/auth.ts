@@ -44,6 +44,7 @@ function baseURL(): string | undefined {
 }
 
 function buildAuth() {
+  const isProd = process.env.NODE_ENV === "production";
   return betterAuth({
     database: prismaAdapter(prisma, { provider: "postgresql" }),
     emailAndPassword: { enabled: true, minPasswordLength: 8, autoSignIn: true },
@@ -51,9 +52,20 @@ function buildAuth() {
     baseURL: baseURL(),
     trustedOrigins: trustedOrigins(),
     session: { expiresIn: 60 * 60 * 24 * 30, updateAge: 60 * 60 * 24 },
-    // Brute-force protection on auth endpoints.
-    rateLimit: { enabled: true, window: 60, max: 20 },
-    advanced: { useSecureCookies: process.env.NODE_ENV === "production" },
+    // Brute-force protection on the auth endpoints. Tighter than the default:
+    // ten attempts a minute is generous for a human and hostile to a script.
+    rateLimit: { enabled: true, window: 60, max: 10 },
+    advanced: {
+      useSecureCookies: isProd,
+      // The session cookie must be unreadable from JavaScript (blunts XSS
+      // session theft) and must not ride along on cross-site requests (CSRF).
+      defaultCookieAttributes: {
+        httpOnly: true,
+        sameSite: "lax",
+        secure: isProd,
+        path: "/",
+      },
+    },
   });
 }
 

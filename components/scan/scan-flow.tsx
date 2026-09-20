@@ -155,7 +155,18 @@ export function ScanFlow() {
       clearInterval(timer);
 
       if (!res.ok) {
-        const data = (await res.json().catch(() => ({}))) as { error?: string };
+        const data = (await res.json().catch(() => ({}))) as { error?: string; code?: string };
+        // The server is authoritative on both gates — reflect its verdict in
+        // the UI rather than showing a generic failure.
+        if (res.status === 402 || data.code === "quota_exceeded") {
+          setScanCount(Math.max(scanCount, FREE_SCAN_LIMIT));
+          store.incrementScanCount();
+          return;
+        }
+        if (res.status === 401 || data.code === "auth_required") {
+          setAccountsEnabled(true);
+          return;
+        }
         throw new Error(data.error ?? "Analysis failed. Please try again.");
       }
       const data = (await res.json()) as { report: import("@/lib/ai/types").FaceReport };

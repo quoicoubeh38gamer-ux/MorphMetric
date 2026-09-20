@@ -306,6 +306,21 @@ pinned entries break on every dependency bump.
   tamper-proof quota needs the per-user counter in the database.
 
 
+### Hardening once accounts went live
+- **Server-side quota**: `/api/analyze` counts `Scan` rows for the session user
+  and refuses past `FREE_SCAN_LIMIT` unless the subscription is ACTIVE and
+  PRO/PREMIUM. A database fault fails *open* and logs — a quota is not worth
+  taking the product down for. The browser counter is UX only.
+- **Session cookies**: httpOnly (blunts XSS session theft), sameSite lax
+  (CSRF), secure in production. Auth rate limit tightened 20 -> 10 per minute.
+- **API exposure**: every `/api/*` response carries
+  `Cache-Control: no-store, private`, `X-Robots-Tag: noindex`, `Vary: Cookie`.
+  `robots.ts` already disallows `/api/`. `productionBrowserSourceMaps: false`
+  so original sources never ship.
+- Verified on a running build: headers present, `x-powered-by` absent, zero
+  `.map` files emitted.
+
+
 ### Still to do (next batch)
 - Stripe checkout + webhook (blocked on the owner's banking details). Gating is
   declarative in `lib/subscription.ts`; `BILLING_LIVE=false` unlocks every tier

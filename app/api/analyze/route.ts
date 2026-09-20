@@ -3,6 +3,8 @@ import { analyzeRequestSchema } from "@/lib/validation/analyze";
 import { clientKey, rateLimit } from "@/lib/security/rate-limit";
 import { apiError, internalError } from "@/lib/security/errors";
 import { authEnabled, getSession } from "@/lib/auth/auth";
+import { prisma } from "@/lib/db";
+import { FREE_SCAN_LIMIT } from "@/lib/quota";
 import { getVisionProvider } from "@/lib/ai/vision";
 import { visionFromLandmarkSignals } from "@/lib/ai/measurements";
 import { buildFaceReport } from "@/lib/ai/report";
@@ -42,6 +44,7 @@ export async function POST(req: Request): Promise<Response> {
 
     // An analysis belongs to an account. Once accounts are configured this is
     // the authoritative gate — the client-side paywall is only UX.
+    let userId: string | null = null;
     if (authEnabled) {
       const session = await getSession();
       if (!session?.user) {
@@ -50,6 +53,33 @@ export async function POST(req: Request): Promise<Response> {
           code: "auth_required",
           message: "Create a free account to run an analysis.",
         });
+      }
+      userId = session.user.id;
+
+      // Free-tier allowance, counted in the database against this user — the
+      // browser counter is only there to show the paywall before the request.
+      // A database fault fails open rather than taking the product down; the
+      // failure is logged so it cannot pass unnoticed.
+      try {
+        const [used, subscription] = await Promise.all([
+          prisma.scan.count({ where: { userId } }),
+          prisma.subscription.findUnique({
+            where: { userId },
+            select: { plan: true, status: true },
+          }),
+        ]);
+        const paid =
+          subscription?.status === "ACTIVE" &&
+          (subscription.plan === "PRO" || subscription.plan === "PREMIUM");
+        if (!paid && used >= FREE_SCAN_LIMIT) {
+          return apiError({
+            status: 402,
+            code: "quota_exceeded",
+            message: `You've used your ${FREE_SCAN_LIMIT} free analyses. Upgrade for unlimited scans.`,
+          });
+        }
+      } catch (error) {
+        console.error("[analyze] quota check unavailable — allowing this run", error);
       }
     }
 
@@ -97,6 +127,18 @@ export async function POST(req: Request): Promise<Response> {
       quality,
       vision.mode === "landmarks" ? vision.metrics : undefined,
     );
+
+    // Record the scan against the account. Never let a write failure lose an
+    // analysis the user already waited for.
+    if (userId) {
+      try {
+        await prisma.scan.create({
+          data: { userId, status: "COMPLETE", qualityScore: quality.score },
+        });
+      } catch (error) {
+        console.error("[analyze] could not record scan", error);
+      }
+    }
 
     return NextResponse.json(
       { report },
