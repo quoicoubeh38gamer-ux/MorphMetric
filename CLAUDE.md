@@ -379,6 +379,34 @@ pinned entries break on every dependency bump.
 - Every article route is in `sitemap.ts` and prerendered (SSG). Report feature
   cards deep-link into the matching guide via `learnPathFor()`.
 
+### The mark (logo)
+- A monogram **M**, drawn as one continuous stroke of constant weight: the legs
+  splay outward like a facial contour and the centre vertex descends deep
+  enough that it reads M, not W, at 16px. Perfectly symmetric about its
+  vertical axis — the first thing the product measures.
+- Chosen by rendering eight concepts at 128/44/24/16px and rejecting the ones
+  that read as something else at icon size: three dots in a circle read as a
+  power socket, `<|>` as code brackets, an M in a teardrop as a map pin. The
+  depth of the centre vertex was then tuned over two more passes.
+- **Single source of truth**: `MARK_PATH` in `components/site/logo.tsx`.
+  `scripts/gen-icons.mjs` regenerates every raster from the same path — re-run
+  it after any change to the mark.
+- `MARK_VIEWBOX = "7 7.65 34 34"` crops tight to the ink bounds (the path is
+  drawn on a 48-unit grid but only occupies x 8.5–39.5, y 13.3–36). Rendering
+  the raw `0 0 48 48` box leaves the M floating with a third of the plate
+  empty. The icon generator places that cropped box at 62.5% of the plate to
+  keep the same optical margin the component gets.
+- Theme handling needs no second artwork: the plate is `bg-primary` and the
+  glyph `text-primary-foreground`, so it is ink-on-light and off-white-on-dark
+  automatically.
+- `LogoMark` (mark only, `sm|md|lg`) and `Logo` (lockup, `showWordmark`) are
+  both exported.
+- `app/opengraph-image.tsx` was still on the pre-redesign purple palette and
+  has been rebuilt on the mark and the angelic palette. **Satori rejects the
+  `background` shorthand when it carries a gradient and a colour together** —
+  use `backgroundColor` + `backgroundImage` separately, or the route 500s at
+  request time while the build still passes.
+
 ### Still to do (next batch)
 - Stripe checkout + webhook (blocked on the owner's banking details). Gating is
   declarative in `lib/subscription.ts`; `BILLING_LIVE=false` unlocks every tier
