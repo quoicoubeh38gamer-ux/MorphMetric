@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { headers } from "next/headers";
 import {
   ArrowRight,
   Check,
@@ -135,10 +136,12 @@ const FAQ_ITEMS: FaqItem[] = [
   },
 ];
 
-export default function LandingPage() {
+export default async function LandingPage() {
+  const nonce = (await headers()).get("x-nonce") ?? undefined;
+
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <script nonce={nonce} type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
 
       {/* Hero */}
       <Section className="relative overflow-hidden pt-16 sm:pt-24">

@@ -1,32 +1,9 @@
 /** @type {import('next').NextConfig} */
 
-// Content-Security-Policy.
-// - 'unsafe-inline' on scripts is required by Next's inline hydration bootstrap
-//   and the pre-paint theme script (no nonce middleware yet — noted as a future
-//   hardening).
-// - 'wasm-unsafe-eval' + blob: + jsdelivr/storage.googleapis.com allow the
-//   MediaPipe FaceLandmarker WASM runtime and model to load; if CSP ever blocks
-//   them the app degrades gracefully to the heuristic, it does not break.
-const csp = [
-  "default-src 'self'",
-  "base-uri 'self'",
-  "object-src 'none'",
-  "frame-ancestors 'none'",
-  "form-action 'self'",
-  "img-src 'self' data: blob:",
-  "media-src 'self' blob:",
-  "font-src 'self' data:",
-  "style-src 'self' 'unsafe-inline'",
-  "script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' blob: https://cdn.jsdelivr.net",
-  "connect-src 'self' blob: https://cdn.jsdelivr.net https://storage.googleapis.com",
-  "worker-src 'self' blob:",
-  "frame-src 'none'",
-  "manifest-src 'self'",
-  "upgrade-insecure-requests",
-].join("; ");
-
+// Content-Security-Policy lives in middleware.ts: it needs a fresh nonce per
+// request, which a static header cannot provide. Everything else is static and
+// stays here.
 const securityHeaders = [
-  { key: "Content-Security-Policy", value: csp },
   { key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains; preload" },
   { key: "X-Content-Type-Options", value: "nosniff" },
   { key: "X-Frame-Options", value: "DENY" },

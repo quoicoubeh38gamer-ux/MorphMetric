@@ -321,6 +321,26 @@ pinned entries break on every dependency bump.
   `.map` files emitted.
 
 
+### CSP nonce middleware (closes the last known gap)
+- `middleware.ts` mints a fresh nonce per request, sets it on both the request
+  (so Next stamps its own inline bootstrap scripts) and the response CSP.
+  `'unsafe-inline'` is gone from `script-src`. The static CSP was removed from
+  `next.config.mjs` — two CSP headers get intersected by the browser, so
+  leaving it would have broken every page.
+- **Deliberately no `'strict-dynamic'`**: it makes the browser ignore the host
+  allowlist, and the vision model loads its WASM runtime from jsdelivr. Keeping
+  the allowlist means face detection behaves exactly as before.
+- `style-src` keeps `'unsafe-inline'`: next/font and inline style attributes
+  need it, and injected CSS cannot execute code the way injected script can.
+- **Cost, accepted knowingly**: a per-request nonce cannot live in a
+  pre-rendered HTML file, so every page is now `ƒ` (server-rendered) where many
+  were `○` (static). That means a function invocation per page view. Reverting
+  is a matter of deleting `middleware.ts` and restoring the static CSP.
+- Verified on a running build: single CSP header, nonce unique per request and
+  matching the one stamped in the HTML, zero CSP violations in a real browser
+  across /, /scan, /dashboard, /results, /report, /signup.
+
+
 ### Still to do (next batch)
 - Stripe checkout + webhook (blocked on the owner's banking details). Gating is
   declarative in `lib/subscription.ts`; `BILLING_LIVE=false` unlocks every tier
