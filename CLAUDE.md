@@ -271,6 +271,15 @@ file. Never rewrite a working feature arbitrarily.
   plural region labels both read correctly.
 
 
+### Build note: npm `allowScripts`
+npm 11+ blocks dependency install scripts by default, so Vercel logs warned
+about Prisma's three packages and `unrs-resolver`. Verified with npm 12 that
+this is a warning only — `npm ci` and `npm run build` both exit 0 without it.
+Approved them anyway in `package.json > allowScripts` so the build log stays
+readable. Entries are intentionally unpinned (`true`, not `pkg@version`), since
+pinned entries break on every dependency bump.
+
+
 ### Still to do (next batch)
 - Stripe checkout + webhook (blocked on the owner's banking details). Gating is
   declarative in `lib/subscription.ts`; `BILLING_LIVE=false` unlocks every tier
