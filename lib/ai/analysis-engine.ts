@@ -18,7 +18,7 @@ export function scoreFeatures(vision: VisionResult, metricsRaw?: FaceMetricsRaw)
     // Real landmark geometry drives the FULL honest range (a genuinely
     // off feature lands well below 10). The heuristic fallback (no real face)
     // stays moderate because there is no real signal to be harsh about.
-    const raw = real ? 3 + signal * 17 : meta.center + (signal - 0.5) * meta.spread;
+    const raw = real ? 2 + signal * 18 : meta.center + (signal - 0.5) * meta.spread;
     const score = Math.round(clamp(raw, 2, 20) * 10) / 10;
     return {
       key,

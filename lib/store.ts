@@ -19,6 +19,7 @@ const K = {
   consent: `${NS}consent`,
   settings: `${NS}settings`,
   styleTried: `${NS}styleTried`,
+  scanCount: `${NS}scanCount`,
 } as const;
 
 /** How many full reports we keep. Bounded so localStorage never fills up. */
@@ -113,6 +114,11 @@ export const store = {
     const list = read<FaceReport[]>(K.reports) ?? [];
     write(K.reports, list.filter((r) => r.id !== id));
   },
+
+  // Scans consumed against the free allowance. UX-level only — the database
+  // owns the authoritative count once accounts are live.
+  getScanCount: () => read<number>(K.scanCount) ?? 0,
+  incrementScanCount: () => write(K.scanCount, (read<number>(K.scanCount) ?? 0) + 1),
 
   // Explicit consent — nothing is processed before this exists.
   getConsent: () => read<ConsentRecord>(K.consent),

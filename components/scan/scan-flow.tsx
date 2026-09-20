@@ -3,12 +3,15 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
-import { AlertTriangle, Camera, CheckCircle2, EyeOff, Lock, RefreshCw, ScanFace, Server, Trash2, Upload } from "lucide-react";
+import { AlertTriangle, Camera, CheckCircle2, EyeOff, Lock, RefreshCw, ScanFace, Server, Sparkle, Trash2, UserPlus, Upload } from "lucide-react";
 import type { Profile, Sex } from "@/lib/ai/types";
 import { processImage, validateFile, type ProcessedImage } from "@/lib/image/client";
 import { detectFace, type FaceDetectResult } from "@/lib/ai/vision/landmarks";
 import { CameraCapture } from "./camera-capture";
 import { store } from "@/lib/store";
+import { useSession } from "@/lib/auth/client";
+import { FREE_SCAN_LIMIT, quotaFrom } from "@/lib/quota";
+import { ButtonLink } from "@/components/ui/button";
 import { CAPTURE_GUIDELINES, GOAL_OPTIONS, SEX_OPTIONS } from "@/lib/constants";
 import { cn } from "@/lib/utils/cn";
 import { Button } from "@/components/ui/button";
@@ -33,11 +36,25 @@ export function ScanFlow() {
   const router = useRouter();
   const [step, setStep] = useState<Step>("welcome");
   const [consentChecked, setConsentChecked] = useState(false);
+  const { data: session } = useSession();
+  // null = still asking the server whether accounts are configured.
+  const [accountsEnabled, setAccountsEnabled] = useState<boolean | null>(null);
+  const [scanCount, setScanCount] = useState(0);
 
-  // Consent already on file for this version? Skip straight to the profile.
   useEffect(() => {
     if (store.hasValidConsent()) setStep("profile");
+    setScanCount(store.getScanCount());
+    // The server tells us whether accounts exist; without this the browser
+    // can't distinguish "signed out" from "accounts not set up", and would
+    // lock everyone out of scanning.
+    fetch("/api/health")
+      .then((r) => r.json())
+      .then((d: { auth?: boolean }) => setAccountsEnabled(Boolean(d?.auth)))
+      .catch(() => setAccountsEnabled(false));
   }, []);
+
+  const quota = quotaFrom(scanCount);
+  const needsAccount = accountsEnabled === true && !session?.user;
 
   // profile
   const [age, setAge] = useState("");
@@ -155,6 +172,7 @@ export function ScanFlow() {
           provider: data.report.provider,
         });
       }
+      store.incrementScanCount();
       store.addXp(50);
       router.push("/results");
     } catch (e) {
@@ -164,9 +182,74 @@ export function ScanFlow() {
     }
   }
 
+  if (accountsEnabled === null) {
+    return (
+      <div className="mx-auto max-w-2xl py-16 text-center">
+        <div className="mx-auto h-8 w-8 animate-spin rounded-full border-2 border-border border-t-accent" />
+      </div>
+    );
+  }
+
+  if (needsAccount) {
+    return (
+      <div className="mx-auto max-w-lg">
+        <div className="card-base p-7 text-center sm:p-9">
+          <span className="mx-auto grid h-12 w-12 place-items-center rounded-full border border-border text-muted">
+            <UserPlus className="h-5 w-5" strokeWidth={1.5} />
+          </span>
+          <h2 className="mt-6 font-display text-3xl tracking-tight">Create a free account</h2>
+          <p className="mt-3 text-sm leading-relaxed text-muted">
+            An analysis belongs to an account so your history, comparisons and progress are
+            yours — and so you can delete all of it in one click. It takes an email and a
+            password, nothing else.
+          </p>
+          <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:justify-center">
+            <ButtonLink href="/signup">Create my account</ButtonLink>
+            <ButtonLink href="/login" variant="secondary">I already have one</ButtonLink>
+          </div>
+          <p className="mt-6 text-xs text-muted">
+            {FREE_SCAN_LIMIT} analyses included, free.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  if (quota.exhausted) {
+    return (
+      <div className="mx-auto max-w-lg">
+        <div className="card-base p-7 text-center sm:p-9">
+          <span className="mx-auto grid h-12 w-12 place-items-center rounded-full border border-border text-accent">
+            <Sparkle className="h-5 w-5" strokeWidth={1.5} />
+          </span>
+          <h2 className="mt-6 font-display text-3xl tracking-tight">
+            You&apos;ve used your free analyses
+          </h2>
+          <p className="mt-3 text-sm leading-relaxed text-muted">
+            That&apos;s {quota.used} of {quota.limit}. Upgrade for unlimited scans, full history
+            and side-by-side comparisons — tracking change over time is where the measurements
+            actually become useful.
+          </p>
+          <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:justify-center">
+            <ButtonLink href="/#pricing">See the plans</ButtonLink>
+            <ButtonLink href="/dashboard" variant="secondary">Back to dashboard</ButtonLink>
+          </div>
+          <p className="mt-6 text-xs text-muted">
+            Your existing analyses stay available in History.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="mx-auto max-w-2xl">
       <StepDots step={step} />
+      {quota.remaining <= 1 ? (
+        <p className="mb-5 text-center text-xs text-muted">
+          {quota.remaining} free {quota.remaining === 1 ? "analysis" : "analyses"} remaining
+        </p>
+      ) : null}
 
       <AnimatePresence mode="wait">
         {step === "welcome" && (

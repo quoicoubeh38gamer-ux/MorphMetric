@@ -280,6 +280,32 @@ readable. Entries are intentionally unpinned (`true`, not `pkg@version`), since
 pinned entries break on every dependency bump.
 
 
+### Scoring recalibration + scan gating (current)
+- **The compressed scale was a real bug.** Every feature was a weighted average
+  of 2–3 sub-signals, and averaging independent components collapses variance
+  toward the middle. Tolerances were also enormous (`band(noseWidth, .25, .12)`
+  accepted 13–37% of face width — every human nose). Signals clustered at
+  0.55–0.75, and `3 + s*17` mapped that to 12.4–15.8.
+- **Fix**: sub-signals are now normalised *deviations* from a reference,
+  combined by quadratic mean so the worst component dominates instead of being
+  diluted; tolerances tightened to realistic anthropometric spreads; output
+  widened to `2 + s*18`. Monte-Carlo over 20k simulated faces: the index moved
+  from min 13.3 / median 16.1 / max 18.7 with 0% under 10, to min 7.6 /
+  median 12.2 / max 16.9 with 6.5% under 10.
+- **Reframing, not a beauty score.** The index measures conformance to
+  proportion canons. Striking faces routinely deviate — that is often what
+  makes them distinctive rather than generic — so the methodology dialog now
+  answers the "a model scored mid-range" objection directly. No geometric
+  measurement can rank attractiveness; there is no ground truth for it in a
+  face, and we do not claim one.
+- **Scan gating**: `/api/analyze` requires a session once `authEnabled`
+  (real server-side gate). `/api/health` exposes an `auth` boolean so the
+  browser can tell "signed out" from "accounts not configured" and not lock
+  everyone out. Client shows an account wall and a quota wall
+  (`lib/quota.ts`, FREE_SCAN_LIMIT = 2). The client counter is UX only — a
+  tamper-proof quota needs the per-user counter in the database.
+
+
 ### Still to do (next batch)
 - Stripe checkout + webhook (blocked on the owner's banking details). Gating is
   declarative in `lib/subscription.ts`; `BILLING_LIVE=false` unlocks every tier

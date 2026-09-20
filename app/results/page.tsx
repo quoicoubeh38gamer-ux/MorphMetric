@@ -101,8 +101,10 @@ export default function ResultsPage() {
             </h1>
             <p className="mt-2 flex items-start gap-2 text-sm text-muted">
               <Info className="mt-0.5 h-4 w-4 shrink-0" />
-              This score is an internal application metric — not an objective measure of
-              attractiveness or your worth. Treat it as a baseline to improve from.
+              This measures how closely your proportions track classical reference
+              canons — not attractiveness. Striking faces often deviate from the canon,
+              and that deviation is frequently what makes them memorable rather than
+              generic. Use it as your own baseline, never as a ranking against people.
             </p>
 
             {report.potentialScore > report.morphScore ? (

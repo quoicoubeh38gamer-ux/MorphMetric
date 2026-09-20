@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { analyzeRequestSchema } from "@/lib/validation/analyze";
 import { clientKey, rateLimit } from "@/lib/security/rate-limit";
 import { apiError, internalError } from "@/lib/security/errors";
+import { authEnabled, getSession } from "@/lib/auth/auth";
 import { getVisionProvider } from "@/lib/ai/vision";
 import { visionFromLandmarkSignals } from "@/lib/ai/measurements";
 import { buildFaceReport } from "@/lib/ai/report";
@@ -37,6 +38,19 @@ export async function POST(req: Request): Promise<Response> {
         message: "Too many requests. Please wait a moment and try again.",
         headers: { "Retry-After": "30" },
       });
+    }
+
+    // An analysis belongs to an account. Once accounts are configured this is
+    // the authoritative gate — the client-side paywall is only UX.
+    if (authEnabled) {
+      const session = await getSession();
+      if (!session?.user) {
+        return apiError({
+          status: 401,
+          code: "auth_required",
+          message: "Create a free account to run an analysis.",
+        });
+      }
     }
 
     const raw = await req.text();

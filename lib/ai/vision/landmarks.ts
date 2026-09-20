@@ -65,9 +65,26 @@ function loadImage(file: File): Promise<HTMLImageElement> {
 
 const dist = (a: Pt, b: Pt) => Math.hypot(a.x - b.x, a.y - b.y);
 const clamp01 = (n: number) => Math.min(1, Math.max(0, n));
-/** 1 when `v` sits at `ideal`, decaying to 0 at ±`tol`. A neutral-balance band. */
-const band = (v: number, ideal: number, tol: number) => clamp01(1 - Math.abs(v - ideal) / tol);
 const round3 = (n: number) => Math.round(n * 1000) / 1000;
+
+/**
+ * Normalised deviation from a reference: 0 on the reference, 1 at the edge of
+ * the plausible human range. `tol` is a real anthropometric spread — the
+ * previous generous windows accepted essentially every human face, which is
+ * why every scan landed in the same three-point band.
+ */
+const dev = (v: number, ref: number, tol: number) => clamp01(Math.abs(v - ref) / tol);
+
+/**
+ * Combine deviations by quadratic mean, so the worst component dominates.
+ * A weighted average of independent sub-signals collapses variance toward the
+ * middle — the real cause of the compressed scale.
+ */
+const combine = (...ds: number[]) =>
+  clamp01(Math.sqrt(ds.reduce((sum, d) => sum + d * d, 0) / Math.max(1, ds.length)));
+
+/** A feature signal is the complement of its combined deviation. */
+const signalFrom = (...ds: number[]) => clamp01(1 - combine(...ds));
 
 // Canonical MediaPipe FaceMesh indices.
 const IDX = {
@@ -126,7 +143,7 @@ function computeSignals(lm: Pt[], skinEvenness: number): Record<FeatureKey, numb
     symDev += dx + dy;
   }
   symDev /= SYM_PAIRS.length;
-  const symmetry = clamp01(1 - symDev / 0.05);
+  const symmetry = signalFrom(clamp01(symDev / 0.025));
 
   // Proportions — vertical thirds + horizontal fifths + width/height ratio.
   const browY = (P(IDX.browR).y + P(IDX.browL).y) / 2;
@@ -135,43 +152,43 @@ function computeSignals(lm: Pt[], skinEvenness: number): Record<FeatureKey, numb
   const t3 = P(IDX.chin).y - P(IDX.noseBase).y;
   const tSum = Math.max(1e-4, t1 + t2 + t3);
   const thirdsDev = Math.abs(t1 / tSum - 1 / 3) + Math.abs(t2 / tSum - 1 / 3) + Math.abs(t3 / tSum - 1 / 3);
-  const thirds = clamp01(1 - thirdsDev / 0.4);
+  const dThirds = clamp01(thirdsDev / 0.18);
 
   const interocular = dist(P(IDX.eyeRIn), P(IDX.eyeLIn));
   const eyeWidth = (dist(P(IDX.eyeROut), P(IDX.eyeRIn)) + dist(P(IDX.eyeLOut), P(IDX.eyeLIn))) / 2 || 1e-4;
   const fifthsRatio = interocular / eyeWidth;
-  const fifths = band(fifthsRatio, 1, 0.6);
+  const dFifths = dev(fifthsRatio, 1, 0.25);
   const whr = faceWidth / faceHeight;
-  const whrSignal = band(whr, 0.75, 0.25);
-  const proportions = clamp01(thirds * 0.4 + fifths * 0.35 + whrSignal * 0.25);
+  const dWhr = dev(whr, 0.75, 0.1);
+  const proportions = signalFrom(dThirds, dFifths, dWhr);
 
   // Eyes — aspect ratio + spacing.
   const eaR = dist(P(IDX.eyeRTop), P(IDX.eyeRBot)) / (dist(P(IDX.eyeROut), P(IDX.eyeRIn)) || 1e-4);
   const eaL = dist(P(IDX.eyeLTop), P(IDX.eyeLBot)) / (dist(P(IDX.eyeLOut), P(IDX.eyeLIn)) || 1e-4);
   const eyeAspect = (eaR + eaL) / 2;
-  const eyes = clamp01(band(eyeAspect, 0.32, 0.16) * 0.6 + fifths * 0.4);
+  const eyes = signalFrom(dev(eyeAspect, 0.32, 0.09), dFifths);
 
   // Brows — height above the eye + left/right balance.
   const gapR = (P(IDX.eyeRTop).y - P(IDX.browR).y) / faceHeight;
   const gapL = (P(IDX.eyeLTop).y - P(IDX.browL).y) / faceHeight;
   const browGap = (gapR + gapL) / 2;
-  const browBalance = clamp01(1 - Math.abs(gapR - gapL) / 0.04);
-  const brows = clamp01(band(browGap, 0.06, 0.05) * 0.6 + browBalance * 0.4);
+  const dBrowBalance = clamp01(Math.abs(gapR - gapL) / 0.02);
+  const brows = signalFrom(dev(browGap, 0.06, 0.03), dBrowBalance);
 
   // Nose — width vs face + length.
   const noseWidth = dist(P(IDX.alaR), P(IDX.alaL)) / faceWidth;
   const noseLen = (P(IDX.noseBase).y - P(IDX.noseBridge).y) / faceHeight;
-  const nose = clamp01(band(noseWidth, 0.25, 0.12) * 0.6 + band(noseLen, 0.33, 0.16) * 0.4);
+  const nose = signalFrom(dev(noseWidth, 0.25, 0.06), dev(noseLen, 0.33, 0.08));
 
   // Lips — mouth width vs face + fullness.
   const mouthWidth = dist(P(IDX.mouthR), P(IDX.mouthL)) / faceWidth;
   const lipHeight = dist(P(IDX.lipTopOuter), P(IDX.lipBotOuter)) / (dist(P(IDX.mouthR), P(IDX.mouthL)) || 1e-4);
-  const lips = clamp01(band(mouthWidth, 0.46, 0.14) * 0.6 + band(lipHeight, 0.4, 0.28) * 0.4);
+  const lips = signalFrom(dev(mouthWidth, 0.46, 0.08), dev(lipHeight, 0.4, 0.16));
 
   // Jaw / lower face — width vs face + chin height.
   const jawWidth = dist(P(IDX.jawR), P(IDX.jawL)) / faceWidth;
   const chinH = (P(IDX.chin).y - P(IDX.lipBotOuter).y) / faceHeight;
-  const jaw = clamp01(band(jawWidth, 0.78, 0.2) * 0.6 + band(chinH, 0.19, 0.12) * 0.4);
+  const jaw = signalFrom(dev(jawWidth, 0.78, 0.1), dev(chinH, 0.19, 0.07));
 
   return {
     symmetry: round3(symmetry),

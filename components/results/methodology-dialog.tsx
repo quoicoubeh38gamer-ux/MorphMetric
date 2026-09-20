@@ -22,6 +22,11 @@ const STEPS = [
   },
   {
     n: "04",
+    t: "Why a striking face can score mid-range",
+    d: "This is conformance to a proportion canon, not a beauty ranking. Professional models frequently measure mid-scale here, because distinctive features — wide-set eyes, a strong nose, an unusual face ratio — are deviations from the canon, and are often exactly what makes a face memorable instead of generic. A high score means 'close to the reference geometry', nothing more.",
+  },
+  {
+    n: "05",
     t: "Stated limits",
     d: "Depth-dependent characteristics (nose projection, bridge, jaw bone) and surface properties (skin) cannot be judged reliably from one flat, front-lit photo. Those are labelled estimated and are never scored as if measured.",
   },
@@ -59,8 +64,10 @@ export function MethodologyDialog() {
         <p className="mt-6 rounded-2xl border border-border bg-background/60 p-5 text-xs leading-relaxed text-muted">
           The overall index is an internal, relative metric — useful as a baseline to compare
           against your own later scans. It is not a diagnosis, not medical advice, and not a
-          measure of attractiveness or of a person&apos;s worth. Structural characteristics are
-          reported as measurements, never as defects to correct.
+          measure of attractiveness or of a person&apos;s worth. No geometric measurement can
+          rank how good someone looks: there is no objective ground truth for that in a face,
+          and any product claiming otherwise is inventing a number. Structural characteristics
+          are reported as measurements, never as defects to correct.
         </p>
       </Modal>
     </>
