@@ -640,7 +640,7 @@ const fade = {
 };
 
 const inputCls =
-  "w-full rounded-xl border border-border bg-background px-3.5 py-2.5 text-sm outline-none transition-colors focus:border-primary/60";
+  "w-full rounded-xl border border-border bg-background px-3.5 py-2.5 text-base outline-none transition-colors focus:border-primary/60 sm:text-sm";
 
 function Field({ label, hint, children }: { label: string; hint?: string; children: React.ReactNode }) {
   return (

@@ -80,6 +80,26 @@
   html {
     -webkit-text-size-adjust: 100%;
     scroll-behavior: smooth;
+    /* Grey flash on tap is an artefact of the mobile browser, not a design
+       decision — our own :active states handle the feedback. */
+    -webkit-tap-highlight-color: transparent;
+  }
+  html,
+  body {
+    /* A safety net, not a licence: any element that overshoots the viewport
+       is clipped instead of adding a sideways scroll on a phone. `clip`
+       rather than `hidden` so the sticky navbar keeps working. */
+    overflow-x: clip;
+  }
+  /* Kill the 300ms tap delay on everything that is actually tappable. */
+  button,
+  a,
+  [role="button"],
+  input,
+  select,
+  textarea,
+  label {
+    touch-action: manipulation;
   }
   body {
     @apply bg-background text-foreground antialiased;
@@ -94,6 +114,27 @@
   }
   ::selection {
     background: hsl(var(--accent) / 0.22);
+  }
+
+  /* --- Safe areas -------------------------------------------------------
+     The container keeps its design padding on a normal screen and grows only
+     where a notch or a rounded corner actually eats into the viewport
+     (landscape, mostly). max() means we never shrink below the design value. */
+  .container {
+    padding-left: max(1.25rem, env(safe-area-inset-left));
+    padding-right: max(1.25rem, env(safe-area-inset-right));
+  }
+  @media (min-width: 640px) {
+    .container {
+      padding-left: max(2rem, env(safe-area-inset-left));
+      padding-right: max(2rem, env(safe-area-inset-right));
+    }
+  }
+  @media (min-width: 1024px) {
+    .container {
+      padding-left: max(2.5rem, env(safe-area-inset-left));
+      padding-right: max(2.5rem, env(safe-area-inset-right));
+    }
   }
   /* Respect reduced-motion for every animation the design uses. */
   @media (prefers-reduced-motion: reduce) {
@@ -233,12 +274,74 @@
   .tabular {
     font-variant-numeric: tabular-nums;
   }
+  /* Edge-anchored elements pay back the inset themselves: a sticky footer bar
+     must clear the home indicator, a sticky header must clear the status bar. */
+  .pt-safe {
+    padding-top: env(safe-area-inset-top);
+  }
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  .mb-safe {
+    margin-bottom: env(safe-area-inset-bottom);
+  }
+  /* Full height that survives the mobile URL bar collapsing. */
+  .min-h-screen-safe {
+    min-height: 100vh;
+    min-height: 100dvh;
+  }
   /* Restrained accent halo, for one element per screen at most. */
   .halo-soft {
     box-shadow:
       0 0 0 1px hsl(var(--accent) / 0.14),
       0 0 40px -12px hsl(var(--accent) / 0.4);
   }
+}
+
+/* ---------------------------------------------------------------------------
+   Range inputs — the growth planner is driven by sliders, and a bare
+   appearance:none track gives the browser's default thumb, which is a ~10px
+   target. Draw one big enough for a thumb, on both engines.
+--------------------------------------------------------------------------- */
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+}
+input[type="range"]::-webkit-slider-runnable-track {
+  height: 0.5rem;
+  border-radius: 9999px;
+  background: hsl(var(--border));
+}
+input[type="range"]::-moz-range-track {
+  height: 0.5rem;
+  border-radius: 9999px;
+  background: hsl(var(--border));
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  margin-top: -0.4rem;
+  height: 1.3rem;
+  width: 1.3rem;
+  border-radius: 9999px;
+  border: 1px solid hsl(var(--border));
+  background: hsl(var(--primary));
+  box-shadow: 0 1px 3px hsl(225 24% 9% / 0.18);
+  cursor: pointer;
+}
+input[type="range"]::-moz-range-thumb {
+  height: 1.3rem;
+  width: 1.3rem;
+  border-radius: 9999px;
+  border: 1px solid hsl(var(--border));
+  background: hsl(var(--primary));
+  box-shadow: 0 1px 3px hsl(225 24% 9% / 0.18);
+  cursor: pointer;
+}
+input[type="range"]:focus-visible::-webkit-slider-thumb {
+  outline: 2px solid hsl(var(--ring));
+  outline-offset: 2px;
 }
 
 /* ---------------------------------------------------------------------------

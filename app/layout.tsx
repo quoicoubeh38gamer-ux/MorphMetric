@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { headers } from "next/headers";
 import { Manrope, Instrument_Serif, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
@@ -31,6 +31,7 @@ export const metadata: Metadata = {
   },
   description: DESCRIPTION,
   applicationName: "MorphMetric",
+  appleWebApp: { capable: true, title: "MorphMetric", statusBarStyle: "default" },
   keywords: [
     "morphology analysis",
     "facial analysis",
@@ -55,6 +56,22 @@ export const metadata: Metadata = {
     title: "MorphMetric",
     description: DESCRIPTION,
   },
+};
+
+/**
+ * Mobile viewport. `viewportFit: "cover"` lets the page use the full screen on
+ * notched phones — globals.css then pays the safe-area insets back so nothing
+ * hides under the notch or the home indicator. themeColor tints the browser
+ * chrome so the app doesn't sit in a mismatched bar.
+ */
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#f9fafc" },
+    { media: "(prefers-color-scheme: dark)", color: "#0a0b0f" },
+  ],
 };
 
 // Set the theme before paint to avoid a flash. Defaults to the luminous

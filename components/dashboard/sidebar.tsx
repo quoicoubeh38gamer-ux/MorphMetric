@@ -43,7 +43,7 @@ export function DashboardNav() {
               href={item.href}
               aria-current={isActive(item.href) ? "page" : undefined}
               className={cn(
-                "focus-ring flex items-center gap-2 rounded-full border px-3.5 py-2 text-[0.8125rem] transition-colors",
+                "focus-ring flex min-h-11 items-center gap-2 rounded-full border px-4 text-[0.8125rem] transition-colors",
                 isActive(item.href)
                   ? "border-foreground/20 bg-card text-foreground"
                   : "border-border text-muted hover:text-foreground",

@@ -17,9 +17,11 @@ const variants: Record<Variant, string> = {
   ghost: "text-muted hover:bg-surface hover:text-foreground",
 };
 
+// Touch first: a finger needs ~44px, a cursor does not. Each size is sized
+// for the thumb below sm: and returns to its compact desktop height above it.
 const sizes: Record<Size, string> = {
-  sm: "h-8 px-3.5 text-[0.8125rem]",
-  md: "h-10 px-5 text-sm",
+  sm: "h-10 px-4 text-[0.8125rem] sm:h-8 sm:px-3.5",
+  md: "h-11 px-5 text-sm sm:h-10",
   lg: "h-12 px-7 text-[0.9375rem]",
 };
 

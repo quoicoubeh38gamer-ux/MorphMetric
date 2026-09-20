@@ -341,6 +341,44 @@ pinned entries break on every dependency bump.
   across /, /scan, /dashboard, /results, /report, /signup.
 
 
+### Mobile & PWA pass
+- `viewport` export in `app/layout.tsx`: `width=device-width`, `viewportFit:
+  "cover"`, light/dark `themeColor`. `appleWebApp` set so an installed icon
+  gets the right title and status bar.
+- `app/manifest.ts` + icons (`public/icons/icon-192|512`, `maskable-512`,
+  `app/apple-icon.png`, `app/icon.svg`) — the site installs to a home screen.
+  Icons are generated from the logo monogram; the maskable variant keeps the
+  mark inside the middle 80% because Android crops to a circle.
+- **iOS zoom fix**: Safari zooms the page on focus for any field under 16px and
+  never zooms back. Every text input is now `text-base` below `sm:` and
+  `sm:text-sm` above it. This is invisible in a desktop simulator — do not
+  "tidy" it back to `text-sm`.
+- Safe areas: `.container` pads with `max(design, env(safe-area-inset-*))`, the
+  sticky header takes `pt-safe`, the footer `pb-safe`. Utilities `.pt-safe`,
+  `.pb-safe`, `.mb-safe`, `.min-h-screen-safe` are in `globals.css`.
+- Touch targets: buttons are `h-10/h-11` below `sm:` and return to `h-8/h-10`
+  above it; dashboard pills and nav sheet rows are `min-h-11`. Range inputs got
+  a hand-drawn 1.3rem thumb — the browser default is ~10px.
+- `html, body { overflow-x: clip }` as a net (not `hidden`, which would break
+  the sticky header).
+- Navbar: with seven routes the inline row no longer fits at `md`, so it starts
+  at `lg` and the sheet covers everything below.
+- Verified with Playwright at iPhone 13 size across 16 routes: 0px horizontal
+  overflow, 0 zoom-triggering inputs.
+
+### Learn library (`/learn`)
+- `lib/learn.ts` is the content layer. Region guides are **generated from
+  `FEATURE_META`** — the same metadata the scoring engine uses — so an article
+  and a report can never contradict each other. Add a facial region and its
+  guide appears automatically.
+- Four hand-written method guides: `how-scoring-works`, `photo-guide`,
+  `evidence-tiers`, `what-this-is-not`, plus `privacy-by-design`.
+- `what-this-is-not` states on the record why there is no beauty/hotness score:
+  no ground truth exists, so such a number is a bias presented as a
+  measurement, and a large share of this audience is under 18.
+- Every article route is in `sitemap.ts` and prerendered (SSG). Report feature
+  cards deep-link into the matching guide via `learnPathFor()`.
+
 ### Still to do (next batch)
 - Stripe checkout + webhook (blocked on the owner's banking details). Gating is
   declarative in `lib/subscription.ts`; `BILLING_LIVE=false` unlocks every tier

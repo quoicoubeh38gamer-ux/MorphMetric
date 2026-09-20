@@ -8,8 +8,10 @@ import { authClient } from "@/lib/auth/client";
 import { Logo } from "@/components/site/logo";
 import { Aurora } from "@/components/ui/aurora";
 
+// text-base below sm: iOS Safari zooms the page on focus for any field under
+// 16px, and never zooms back out. The compact size returns on desktop.
 const inputCls =
-  "w-full rounded-xl border border-border bg-background px-10 py-2.5 text-sm outline-none transition-colors focus:border-primary/60";
+  "w-full rounded-xl border border-border bg-background px-10 py-3 text-base outline-none transition-colors focus:border-primary/60 sm:py-2.5 sm:text-sm";
 
 export function AuthForm({ mode }: { mode: "login" | "signup" }) {
   const router = useRouter();

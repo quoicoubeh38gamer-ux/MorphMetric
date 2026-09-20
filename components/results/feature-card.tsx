@@ -1,4 +1,5 @@
-import { CheckCircle2, Lock, Ban, Ruler, Microscope } from "lucide-react";
+import Link from "next/link";
+import { CheckCircle2, Lock, Ban, Ruler, Microscope, BookOpen } from "lucide-react";
 import type { FeatureScore, SubMetric } from "@/lib/ai/types";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -7,6 +8,7 @@ import { ConfidenceBadge } from "@/components/ui/confidence-badge";
 import { EvidenceTag } from "@/components/ui/evidence-tag";
 import { score1 } from "@/lib/utils/format";
 import { scoreTone, TONE_TEXT, type ScoreTone } from "@/lib/utils/score";
+import { learnPathFor } from "@/lib/learn";
 
 const toneClass = (tone: ScoreTone): string => TONE_TEXT[tone];
 
@@ -148,6 +150,16 @@ export function FeatureCard({ feature }: { feature: FeatureScore }) {
           </ul>
         </div>
       ) : null}
+
+      {/* The long-form version of this region: anatomy, every measurement and
+          its reference range, and the evidence behind each lever. */}
+      <Link
+        href={learnPathFor(feature.key)}
+        className="focus-ring mt-4 inline-flex min-h-11 items-center gap-1.5 rounded-lg text-xs text-muted underline decoration-dotted underline-offset-4 hover:text-foreground sm:min-h-0"
+      >
+        <BookOpen className="h-3.5 w-3.5" aria-hidden />
+        Read the full guide to {feature.label.toLowerCase()}
+      </Link>
     </Card>
   );
 }
