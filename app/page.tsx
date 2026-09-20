@@ -141,7 +141,14 @@ export default async function LandingPage() {
 
   return (
     <>
-      <script nonce={nonce} type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <script
+        nonce={nonce}
+        type="application/ld+json"
+        // JSON.stringify does not escape "</script>", so a closing tag inside
+        // any FAQ answer would break out of this block. The content is ours
+        // today; this keeps that from becoming an injection the day it isn't.
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }}
+      />
 
       {/* Hero */}
       <Section className="relative overflow-hidden pt-16 sm:pt-24">

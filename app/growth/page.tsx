@@ -35,15 +35,21 @@ export default function GrowthPage() {
 
   const age = profile?.ageYears ?? null;
 
-  const input: GrowthInput = {
-    ageYears: age,
-    sleepHours: sleep,
-    activityMinutes: activity,
-    nutritionQuality: nutrition,
-    consistency,
-  };
+  // Memoised so `support` can depend on the object itself. Listing the five
+  // primitives instead happens to work today, but a sixth field added to
+  // GrowthInput would silently never retrigger the computation.
+  const input: GrowthInput = useMemo(
+    () => ({
+      ageYears: age,
+      sleepHours: sleep,
+      activityMinutes: activity,
+      nutritionQuality: nutrition,
+      consistency,
+    }),
+    [age, sleep, activity, nutrition, consistency],
+  );
 
-  const support = useMemo(() => computeGrowthSupport(input), [sleep, activity, nutrition, consistency, age]);
+  const support = useMemo(() => computeGrowthSupport(input), [input]);
   const plan = useMemo(
     () => buildNutritionPlan(profile ?? { ageYears: age, sex: "unspecified", heightCm: null, parentAvgCm: null, goals: [] }),
     [profile, age],

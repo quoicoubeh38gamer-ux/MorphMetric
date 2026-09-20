@@ -29,8 +29,13 @@ export interface FaceDetectResult {
   error?: string;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-let landmarkerPromise: Promise<any> | null = null;
+// MediaPipe's own types are not installed — the package is fetched from a CDN
+// at runtime — so this declares the narrow surface we actually call. It is a
+// structural claim about the remote module: keep it minimal so a CDN change
+// shows up as a runtime guard hit rather than a silent mismatch.
+type DetectResult = { faceLandmarks?: Pt[][] };
+type FaceLandmarker = { detect(input: HTMLImageElement | HTMLCanvasElement): DetectResult };
+let landmarkerPromise: Promise<FaceLandmarker> | null = null;
 
 async function getLandmarker() {
   if (!landmarkerPromise) {
@@ -64,7 +69,10 @@ function loadImage(file: File): Promise<HTMLImageElement> {
 }
 
 const dist = (a: Pt, b: Pt) => Math.hypot(a.x - b.x, a.y - b.y);
-const clamp01 = (n: number) => Math.min(1, Math.max(0, n));
+// NaN-safe: Math.max(0, NaN) is NaN, so a plain clamp forwards a bad value
+// instead of stopping it. A single non-finite landmark would otherwise reach
+// the UI as "NaN" and serialise to null, failing the server's schema.
+const clamp01 = (n: number) => (Number.isFinite(n) ? Math.min(1, Math.max(0, n)) : 0);
 const round3 = (n: number) => Math.round(n * 1000) / 1000;
 
 /**
@@ -202,7 +210,10 @@ function computeSignals(lm: Pt[], skinEvenness: number): Record<FeatureKey, numb
   };
 }
 
-const clampN = (n: number, a: number, b: number) => Math.min(b, Math.max(a, n));
+// Same NaN rule as clamp01, with an explicit fallback so each call site says
+// what a missing measurement should read as.
+const clampN = (n: number, a: number, b: number, fallback = a) =>
+  Number.isFinite(n) ? Math.min(b, Math.max(a, n)) : fallback;
 
 /** Real geometric sub-metrics from the mesh (formatted client-side numbers). */
 function computeMetrics(lm: Pt[]): FaceMetricsRaw {
@@ -313,6 +324,15 @@ export async function detectFace(file: File): Promise<FaceDetectResult> {
     const faces = result?.faceLandmarks;
     if (!faces || faces.length === 0) return { detected: false };
     const lm = faces[0] as Pt[];
+
+    // A degenerate detection can hand back non-finite coordinates. Scoring
+    // those produces a confident-looking report built on nothing — and since
+    // NaN serialises to null, the server's schema would reject the request
+    // with a generic error instead of the honest "we could not read this
+    // photo". Treat it as no detection, which is what it is.
+    if (!lm.length || lm.some((p) => !Number.isFinite(p.x) || !Number.isFinite(p.y))) {
+      return { detected: false, error: "Face landmarks could not be read from this image." };
+    }
 
     // Sample pixels for skin evenness at the image's own resolution (capped).
     const cap = 512;

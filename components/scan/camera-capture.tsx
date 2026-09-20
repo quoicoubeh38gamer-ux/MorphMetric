@@ -99,7 +99,6 @@ export function CameraCapture({
   return (
     <div className="mt-6">
       <div className="relative overflow-hidden rounded-2xl border border-border bg-black">
-        {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
         <video ref={videoRef} playsInline muted className="aspect-square w-full object-cover [transform:scaleX(-1)]" />
         <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
           <div className="h-[72%] w-[56%] rounded-[50%] border-2 border-white/60" />

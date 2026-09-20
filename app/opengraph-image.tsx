@@ -33,7 +33,6 @@ export default function OpengraphImage() {
         }}
       >
         <div style={{ display: "flex", alignItems: "center", gap: 22 }}>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={markUri} width={96} height={96} alt="" />
           <div style={{ display: "flex", fontSize: 40, letterSpacing: "-0.02em" }}>MorphMetric</div>
         </div>

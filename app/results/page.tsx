@@ -33,10 +33,12 @@ export default function ResultsPage() {
   const [report, setReport] = useState<FaceReport | null>(null);
   const [history, setHistory] = useState<ScanSnapshot[]>([]);
   const [loaded, setLoaded] = useState(false);
+  const [persistent, setPersistent] = useState(true);
 
   useEffect(() => {
     setReport(store.getReport());
     setHistory(store.getHistory());
+    setPersistent(store.isPersistent());
     setLoaded(true);
   }, []);
 
@@ -66,6 +68,18 @@ export default function ResultsPage() {
 
   return (
     <div className="container max-w-5xl py-12 sm:py-16">
+      {/* Browser storage refused the write (private browsing, blocked site
+          data, or a full origin). The report is held in memory so this session
+          works, but it will not survive a reload — say so rather than let the
+          user assume their history is being kept. */}
+      {!persistent ? (
+        <p className="mb-6 rounded-xl border border-warning/30 bg-warning/5 px-4 py-3 text-sm text-muted">
+          This browser is not letting us save data (private browsing or blocked
+          site data). Your analysis is shown for this visit only and will be
+          gone if you reload. Export the PDF if you want to keep it.
+        </p>
+      ) : null}
+
       {/* Header / score */}
       <div className="relative animate-fade-up overflow-hidden rounded-3xl border border-border bg-grid-fade p-6 sm:p-10">
         <Aurora />

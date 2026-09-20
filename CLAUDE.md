@@ -407,6 +407,55 @@ pinned entries break on every dependency bump.
   use `backgroundColor` + `backgroundImage` separately, or the route 500s at
   request time while the build still passes.
 
+### Bug sweep (audit pass)
+Findings, each verified before and after the fix.
+
+- **Lint was never running.** ESLint 9 needs a flat config and there was none,
+  so `next lint` reported nothing on an empty rule set. `eslint.config.mjs`
+  added (`next/core-web-vitals`, with `react-hooks/exhaustive-deps` raised to
+  error). `npm run lint` now exits 0 on a real rule set.
+- **Stale-closure hazard in `app/growth/page.tsx`**: `useMemo` listed the five
+  primitives instead of the `input` object it actually reads. Correct today,
+  silently wrong the moment a sixth field joins `GrowthInput`. The object is
+  memoised and depended on directly.
+- **Every page logged a failed request.** With no `DATABASE_URL`, the client's
+  `get-session` call got a 503 on every page load. "Am I signed in?" has a
+  correct answer when accounts are off — no — so that read now returns 200 with
+  a null session. Sign-in/up/out still get the 503 and the explanation, because
+  those genuinely cannot proceed.
+- **Silent data loss after a full analysis.** `localStorage` writes were
+  wrapped in an empty catch, so on iOS private browsing, blocked site data or a
+  full origin the report vanished and the user landed on an empty results page
+  after a 30-second scan. `lib/store.ts` now mirrors every write in memory, so
+  the session still works, and `/results` says plainly that nothing will
+  survive a reload. **`remove()` clears both layers** — a half-removal would
+  have resurrected data the user asked to delete.
+- **Clamps forwarded NaN.** `Math.max(0, NaN)` is `NaN`: `clamp01`/`clampN`
+  passed bad values straight through to the UI (rendered as "NaN") and to JSON
+  (`null`, so the server rejected the whole request with a generic error). Both
+  are now finite-checked, and `detectFace` rejects a mesh containing non-finite
+  coordinates outright — an unreadable photo should say so, not score noise.
+- **JSON-LD breakout.** `JSON.stringify` does not escape `</script>`. Content
+  is ours today; `<` is now escaped so it cannot become an injection later.
+
+Checked and found already sound: every divisor in the landmark maths is floored
+at `1e-4`; the analyze route rejects NaN, Infinity, out-of-range, missing
+fields, unknown vision modes, oversized bodies (413) and wrong methods (405),
+leaks no schema internals, and rate-limits at 12/min; both `target="_blank"`
+links carry `rel="noopener noreferrer"`; no stray `console.log`; all 30
+internal links resolve.
+
+### Audit tooling
+`npm run audit` (against a running `npm start`) crawls every route anonymously
+for console errors, failed requests and dead links, then re-crawls the
+data-bearing routes with a real report seeded into localStorage, at desktop and
+phone width, failing on horizontal overflow or any "NaN"/"undefined"/
+"[object Object]" that reached the screen. **Pass two is the one that finds
+things** — an anonymous crawl only ever sees the empty state. Exits non-zero,
+so it can gate a release.
+
+`npm run icons` regenerates every raster from `MARK_PATH`.
+
 ### Still to do (next batch)
 - Stripe checkout + webhook (blocked on the owner's banking details). Gating is
   declarative in `lib/subscription.ts`; `BILLING_LIVE=false` unlocks every tier
