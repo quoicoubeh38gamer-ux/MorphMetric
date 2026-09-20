@@ -8,6 +8,7 @@ import { PageHeader } from "@/components/dashboard/page-header";
 import { Loading } from "@/components/dashboard/empty-state";
 import { Button, ButtonLink } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { DeleteAccount } from "@/components/account/delete-account";
 
 function Row({
   title,
@@ -191,6 +192,23 @@ export default function SettingsPage() {
           </Link>
           .
         </p>
+      </section>
+
+      {/* GDPR art. 17. The controls above clear this browser; this one removes
+          the account itself and everything the server holds against it. */}
+      <section className="mt-12">
+        <h2 className="font-display text-xl tracking-tight">Your account</h2>
+        <p className="mt-1.5 text-sm text-muted">
+          Close your account and erase everything we hold for you.
+        </p>
+        <div className="mt-5">
+          <Row
+            title="Delete my account"
+            description="Removes your account, your analysis allowance and every record attached to it, on our servers and on this device. Immediate, permanent, and it needs no request to us."
+          >
+            <DeleteAccount />
+          </Row>
+        </div>
       </section>
     </>
   );

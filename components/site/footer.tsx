@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Logo } from "./logo";
+import { LEGAL } from "@/lib/legal";
 
 export function Footer() {
   return (
@@ -36,7 +37,9 @@ export function Footer() {
         <div>
           <h2 className="text-sm font-semibold">Trust</h2>
           <ul className="mt-4 space-y-2.5 text-sm text-muted">
-            <li><Link href="/privacy" className="inline-flex min-h-9 items-center hover:text-foreground">Privacy &amp; data</Link></li>
+            <li><Link href="/privacy" className="inline-flex min-h-9 items-center hover:text-foreground">Privacy policy</Link></li>
+            <li><Link href="/terms" className="inline-flex min-h-9 items-center hover:text-foreground">Terms of Service</Link></li>
+            <li><Link href="/legal" className="inline-flex min-h-9 items-center hover:text-foreground">Legal notice</Link></li>
             <li><Link href="/learn/privacy-by-design" className="inline-flex min-h-9 items-center hover:text-foreground">Where your data goes</Link></li>
             <li><Link href="/learn/evidence-tiers" className="inline-flex min-h-9 items-center hover:text-foreground">How evidence works</Link></li>
           </ul>
@@ -45,7 +48,13 @@ export function Footer() {
 
       <div className="border-t border-border">
         <div className="container flex flex-col gap-3 py-6 text-xs text-muted sm:flex-row sm:items-center sm:justify-between">
-          <p>© {new Date().getFullYear()} MorphMetric. A demo product.</p>
+          {/* "A demo product" contradicted the Terms of Service, which describe
+              a real paid service. Two legal statements that disagree are worse
+              than either alone, so the copyright line now names the operator
+              and the disclaimers live where they belong. */}
+          <p>
+            © {new Date().getFullYear()} {LEGAL.entityName.startsWith("TODO") ? LEGAL.productName : LEGAL.entityName}
+          </p>
           <p className="max-w-xl">
             The morphology score is an internal metric, not a measure of
             attractiveness or a person&apos;s worth. Guidance is educational and

@@ -15,7 +15,8 @@ import { chromium } from "playwright-core";
  * Exits non-zero on a finding, so it can gate a release.
  */
 const BASE = process.env.AUDIT_BASE ?? "http://localhost:3000";
-const ROUTES = ["/", "/scan", "/plan", "/growth", "/privacy", "/login", "/signup",
+const ROUTES = ["/", "/scan", "/plan", "/growth", "/login", "/signup",
+  "/privacy", "/terms", "/legal", "/forgot-password", "/reset-password",
   "/learn", "/learn/how-scoring-works", "/learn/facial-symmetry", "/results", "/report",
   "/dashboard", "/dashboard/measurements", "/dashboard/insights", "/dashboard/history",
   "/dashboard/progress", "/dashboard/style", "/dashboard/settings"];

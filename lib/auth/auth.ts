@@ -2,6 +2,7 @@ import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import { headers } from "next/headers";
 import { prisma } from "@/lib/db";
+import { passwordResetMail, sendMail } from "@/lib/email/send";
 
 /**
  * Auth is feature-flagged on DATABASE_URL. Without a database the app runs
@@ -47,7 +48,18 @@ function buildAuth() {
   const isProd = process.env.NODE_ENV === "production";
   return betterAuth({
     database: prismaAdapter(prisma, { provider: "postgresql" }),
-    emailAndPassword: { enabled: true, minPasswordLength: 8, autoSignIn: true },
+    emailAndPassword: {
+      enabled: true,
+      minPasswordLength: 8,
+      autoSignIn: true,
+      // Without this, Better Auth refuses the reset flow outright and logs
+      // "Reset password isn't enabled" — a user who forgets their password is
+      // locked out permanently, with no way back in.
+      resetPasswordTokenExpiresIn: 60 * 60,
+      sendResetPassword: async ({ user, url }) => {
+        await sendMail(passwordResetMail(user.email, url));
+      },
+    },
     secret: process.env.AUTH_SECRET ?? process.env.BETTER_AUTH_SECRET,
     baseURL: baseURL(),
     trustedOrigins: trustedOrigins(),

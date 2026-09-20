@@ -487,6 +487,70 @@ computed contrast of every text node against its real painted background).
 - Removed two stale CLAUDE.md notes claiming CSP still needed
   `'unsafe-inline'` — the nonce middleware replaced that.
 
+### Launch readiness: legal, age gate, erasure, password reset
+
+**`lib/legal.ts` is the one file to fill in.** It holds the operating entity,
+address, registration number, publication director and contact addresses, and
+every legal page reads from it. It ships with `TODO_` placeholders on purpose:
+**never invent legal identity details** — a "mentions légales" naming a
+fabricated publisher is worse than none. `npm run legal:check` exits non-zero
+while any placeholder remains, and a loud red banner shows on `/legal`,
+`/terms` and `/privacy` until they are replaced. It is deliberately NOT wired
+into `npm run build`: a half-filled legal file should not block a preview.
+
+- **`/terms`** — written against what the product actually does. States in the
+  document itself that the score is not a beauty ranking and not medical
+  advice, forbids uploading anyone else's photo, and covers the free
+  allowance, renewal, and the EU withdrawal right for immediately-supplied
+  digital content.
+- **`/legal`** — publisher identification required by the LCEN (art. 6-III):
+  who publishes, how to reach them, who directs publication, who hosts.
+- **`/privacy`** — a real GDPR policy: controller, legal basis per purpose,
+  retention per category, processors, transfers, and the art. 15–21 rights.
+  It leads with the photo never being uploaded, and draws the consequence
+  explicitly — there is no image of anyone to lose in a breach, and no art. 9
+  biometric processing.
+
+**Age gate (16+).** 16 is chosen so the service never needs parental consent
+machinery: GDPR art. 8 sets digital consent at 16 (France lowered it to 15),
+and COPPA's under-13 line sits below that. The check lives in
+`app/api/auth/[...all]/route.ts` **in front of Better Auth**, not in the form —
+a browser check is a suggestion, since anyone can POST the endpoint directly.
+The route reads `birthDate`, validates it in `lib/auth/age-gate.ts`, then
+rebuilds the request without it: **the date is used and discarded, never
+stored** (art. 5(1)(c)). Two traps that cost real bugs: `Date.parse` is lenient
+enough to turn `2010-02-31` into a valid March date, so the parser round-trips
+the components; and the rebuilt request must have its `Content-Length` header
+deleted, or the shortened body is unparseable. Verified against 15 adversarial
+cases including the exact boundary — the day before the 16th birthday is
+rejected, the birthday itself passes.
+
+**Account deletion** (`DELETE /api/account`, GDPR art. 17). Every model
+referencing `User` cascades, so one `prisma.user.delete` removes everything —
+that is enforced by the schema, so a model added later inherits it instead of
+being forgotten in a hand-maintained list. Idempotent (P2025 reports success:
+the state the caller wanted is the state that exists), rate-limited before the
+session lookup, and it clears the session cookie so the browser stops
+presenting a token for a user that no longer exists.
+
+**Password reset.** Better Auth refuses the flow and logs "Reset password
+isn't enabled" unless `emailAndPassword.sendResetPassword` is supplied —
+without it a user who forgets their password is locked out permanently.
+`lib/email/send.ts` posts to Resend over plain fetch (one endpoint does not
+justify an SDK). **With no `RESEND_API_KEY` it logs the message to the server
+console rather than dropping it**, because a reset that vanishes silently is
+only discovered when someone is already locked out. `/forgot-password` always
+reports success so the form cannot be used to discover which addresses have
+accounts.
+
+**Also:** `BILLING_LIVE` now reads `NEXT_PUBLIC_BILLING_LIVE` so launching
+billing is an env change, not a code change and redeploy. `.env.example` was
+rewritten — the storage and vision-provider keys were removed because
+detection runs in the browser and no photo is uploaded, so there is nothing to
+configure and nothing to leak. The footer's "A demo product" line was removed:
+it contradicted the Terms of Service, and two legal statements that disagree
+are worse than either alone.
+
 ### Still to do (next batch)
 - Stripe checkout + webhook (blocked on the owner's banking details). Gating is
   declarative in `lib/subscription.ts`; `BILLING_LIVE=false` unlocks every tier

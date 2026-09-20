@@ -130,7 +130,16 @@ export function requiredPlan(feature: keyof PlanFeatures): Plan {
  * this to `true` the day checkout ships and `currentPlan()` starts honouring
  * the stored plan instead.
  */
-export const BILLING_LIVE = false;
+/**
+ * Whether paid plans are actually purchasable.
+ *
+ * While false, currentPlan() returns "premium" for everyone: showing locked
+ * features nobody can buy is worse than showing them unlocked. Flipping this
+ * is the last step of launching billing — set BILLING_LIVE=true in the
+ * environment once Stripe checkout works end to end, so it does not need a
+ * code change and a redeploy to turn on.
+ */
+export const BILLING_LIVE = process.env.NEXT_PUBLIC_BILLING_LIVE === "true";
 
 export function currentPlan(stored?: Plan | null): Plan {
   if (!BILLING_LIVE) return "premium";

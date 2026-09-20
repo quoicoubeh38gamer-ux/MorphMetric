@@ -3,10 +3,12 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { AlertTriangle, Loader2, Lock, Mail, User } from "lucide-react";
+import { AlertTriangle, CalendarDays, Loader2, Lock, Mail, User } from "lucide-react";
 import { authClient } from "@/lib/auth/client";
 import { Logo } from "@/components/site/logo";
 import { Aurora } from "@/components/ui/aurora";
+import { LEGAL } from "@/lib/legal";
+import { checkAge } from "@/lib/auth/age-gate";
 
 // text-base below sm: iOS Safari zooms the page on focus for any field under
 // 16px, and never zooms back out. The compact size returns on desktop.
@@ -18,6 +20,8 @@ export function AuthForm({ mode }: { mode: "login" | "signup" }) {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  // Collected, sent once, and never stored — the server checks it and drops it.
+  const [birthDate, setBirthDate] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -28,8 +32,27 @@ export function AuthForm({ mode }: { mode: "login" | "signup" }) {
     setError(null);
     setLoading(true);
     try {
+      if (isSignup) {
+        // Checked here purely so the message is instant; the server repeats
+        // the same check and is the one that decides.
+        const verdict = checkAge(birthDate);
+        if (!verdict.ok) {
+          setError(verdict.message);
+          setLoading(false);
+          return;
+        }
+      }
+
       const res = isSignup
-        ? await authClient.signUp.email({ email, password, name: name.trim() || email.split("@")[0] || "there" })
+        ? await authClient.signUp.email({
+            email,
+            password,
+            name: name.trim() || email.split("@")[0] || "there",
+            // The client proxy merges fetchOptions.body into the JSON body
+            // (see better-auth/dist/client/proxy.mjs). Our route in front of
+            // Better Auth reads this field, checks it, and strips it.
+            fetchOptions: { body: { birthDate } },
+          })
         : await authClient.signIn.email({ email, password });
 
       if (res.error) {
@@ -37,7 +60,9 @@ export function AuthForm({ mode }: { mode: "login" | "signup" }) {
         setError(
           status === 503
             ? "Accounts aren't live yet — the database isn't connected. (Everything else works!)"
-            : res.error.message || "Something went wrong. Please try again.",
+            : status === 403
+              ? res.error.message || `You need to be at least ${LEGAL.minimumAge} to create an account.`
+              : res.error.message || "Something went wrong. Please try again.",
         );
         setLoading(false);
         return;
@@ -105,6 +130,44 @@ export function AuthForm({ mode }: { mode: "login" | "signup" }) {
             />
           </Field>
 
+          {isSignup ? (
+            <div>
+              <label htmlFor="birthDate" className="mb-1.5 block text-sm text-muted">
+                Date of birth
+              </label>
+              <Field icon={<CalendarDays className="h-4 w-4" />}>
+                <input
+                  id="birthDate"
+                  type="date"
+                  required
+                  className={inputCls}
+                  value={birthDate}
+                  onChange={(e) => setBirthDate(e.target.value)}
+                  max={new Date().toISOString().slice(0, 10)}
+                  autoComplete="bday"
+                />
+              </Field>
+              <p className="mt-1.5 text-xs text-muted-foreground">
+                You must be {LEGAL.minimumAge} or older. We check this on our servers and
+                keep only the result, never the date.
+              </p>
+            </div>
+          ) : null}
+
+          {isSignup ? (
+            <p className="text-xs leading-relaxed text-muted">
+              By creating an account you agree to the{" "}
+              <Link href="/terms" className="underline underline-offset-2 hover:text-foreground">
+                Terms of Service
+              </Link>{" "}
+              and the{" "}
+              <Link href="/privacy" className="underline underline-offset-2 hover:text-foreground">
+                Privacy Policy
+              </Link>
+              .
+            </p>
+          ) : null}
+
           {error ? (
             <p className="flex items-start gap-2 rounded-xl border border-danger/30 bg-danger/10 p-3 text-sm text-danger">
               <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" /> {error}
@@ -120,6 +183,14 @@ export function AuthForm({ mode }: { mode: "login" | "signup" }) {
             {isSignup ? "Create account" : "Log in"}
           </button>
         </form>
+
+        {!isSignup ? (
+          <p className="mt-4 text-center text-sm">
+            <Link href="/forgot-password" className="text-muted hover:text-foreground hover:underline">
+              Forgot your password?
+            </Link>
+          </p>
+        ) : null}
 
         <p className="mt-6 text-center text-sm text-muted">
           {isSignup ? (

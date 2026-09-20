@@ -20,7 +20,8 @@ const BASE = process.env.AUDIT_BASE ?? "http://localhost:3000";
 const CHROME = "/opt/pw-browsers/chromium";
 
 const ROUTES = [
-  "/", "/scan", "/plan", "/growth", "/privacy", "/login", "/signup", "/report", "/results",
+  "/", "/scan", "/plan", "/growth", "/login", "/signup", "/report", "/results",
+  "/privacy", "/terms", "/legal", "/forgot-password", "/reset-password",
   "/learn", "/learn/how-scoring-works", "/learn/photo-guide", "/learn/evidence-tiers",
   "/learn/what-this-is-not", "/learn/privacy-by-design", "/learn/facial-symmetry",
   "/learn/facial-proportions", "/learn/eye-area", "/learn/eyebrows", "/learn/nose",
